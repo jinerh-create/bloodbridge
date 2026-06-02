@@ -300,13 +300,13 @@ body.offline #offline-banner{display:block}
   </div>
   <div class="auth-box">
     <div class="auth-tabs">
-      <button class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
-      <button class="auth-tab" onclick="switchAuthTab('register')">Register</button>
+      <button class="auth-tab active" id="tab-login">Sign In</button>
+      <button class="auth-tab" id="tab-register">Register</button>
     </div>
     <div id="auth-login">
       <div class="form-group"><label>Email or Phone</label><input id="a-email" type="text" placeholder="Enter your email or phone"></div>
       <div class="form-group"><label>Password</label><input id="a-pass" type="password" placeholder="Enter password"></div>
-      <button class="btn btn-red" onclick="doLogin()">🩸 Sign In</button>
+      <button class="btn btn-red" id="btn-login">🩸 Sign In</button>
       <div style="text-align:center;margin-top:12px;font-size:12px;color:var(--t3)">Demo: <strong>donor@demo.com</strong> / hospital@demo.com / admin@demo.com</div>
     </div>
     <div id="auth-register" style="display:none">
@@ -335,7 +335,7 @@ body.offline #offline-banner{display:block}
         <div class="form-group"><label>Island / Location</label><input id="r-island" placeholder="e.g. Malé, Addu, Kulhudhuffushi"></div>
       </div>
       <div class="form-group"><label>Password</label><input id="r-pass" type="password" placeholder="Create password"></div>
-      <button class="btn btn-red" onclick="doRegister()">🩸 Create Account</button>
+      <button class="btn btn-red" id="btn-register">🩸 Create Account</button>
     </div>
   </div>
 </div>
@@ -1949,6 +1949,12 @@ setTimeout(()=>{
   document.getElementById('splash').classList.add('hide');
   if(currentUser){showApp();}
   else{document.getElementById('auth-screen').style.display='flex';}
+  // Auth button listeners (CSP-safe, no inline onclick)
+  document.getElementById('btn-login')?.addEventListener('click', doLogin);
+  document.getElementById('btn-register')?.addEventListener('click', doRegister);
+  document.getElementById('tab-login')?.addEventListener('click', function(){ switchAuthTab('login'); });
+  document.getElementById('tab-register')?.addEventListener('click', function(){ switchAuthTab('register'); });
+  document.getElementById('a-pass')?.addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
   // init QR after profile renders
   setTimeout(()=>{
     const qrEl=document.getElementById('donor-qr');
