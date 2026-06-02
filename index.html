@@ -633,7 +633,7 @@ function navigate(p){
     history:renderHistory, appointments:renderAppointments,
     camps:renderCamps, notifications:renderNotifications,
     hospital:renderHospital, admin:renderAdmin,
-    'donate-form':renderDonateForm
+    'donate-form':renderDonateForm, 'rare-registry':renderRareRegistry
   };
   const fn=renders[p];
   document.getElementById('page').innerHTML=fn?fn():'<div class="empty"><div class="empty-icon">🔍</div><div>Page not found</div></div>';
@@ -731,6 +731,7 @@ function renderHome(){
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('map');setbn('map')">🗺️ Donor Map</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('appointments')">📅 Book Appt</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('ai')">🤖 AI Helper</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1;border-color:rgba(183,28,28,.3);color:#B71C1C" onclick="navigate('rare-registry');setbn('')">🩸 Rare Blood Registry</button>
   </div>
 
   <div class="sec-hdr"><div class="sec-title">🌟 Community</div><button class="sec-link" onclick="navigate('community')">See All</button></div>
@@ -1373,6 +1374,156 @@ function toast(msg,type='info'){
 }
 
 // ===== INIT =====
+// ===== GLOBAL RARE BLOOD REGISTRY =====
+const RARE_TYPES = [
+  {type:'O-',   rarity:'Rare',     pct:'6.6%', color:'#E53935', desc:'Universal donor — compatible with all blood types. Critical in emergencies.', urgency:3},
+  {type:'B-',   rarity:'Rare',     pct:'1.5%', color:'#D81B60', desc:'Rare type needed for B and O negative patients.',urgency:2},
+  {type:'A-',   rarity:'Rare',     pct:'6.3%', color:'#8E24AA', desc:'Needed for A and O negative patients.',urgency:2},
+  {type:'AB-',  rarity:'Very Rare',pct:'0.5%', color:'#5E35B1', desc:'Rarest of the standard ABO types. Universal plasma donor.',urgency:4},
+  {type:'Rh-null',rarity:'Ultra Rare',pct:'<0.001%',color:'#B71C1C',desc:'"Golden Blood" — fewer than 50 people worldwide. Compatible with all Rh types.',urgency:5},
+  {type:'Bombay',rarity:'Ultra Rare',pct:'0.01%',color:'#880E4F',desc:'Found mostly in South Asia. Can only receive from other Bombay donors.',urgency:5},
+  {type:'INRA-', rarity:'Very Rare',pct:'0.02%',color:'#1A237E',desc:'Rare Indian subcontinent blood group.',urgency:4},
+  {type:'Vel-',  rarity:'Very Rare',pct:'0.025%',color:'#004D40',desc:'Very rare type — 1 in 4,000 people.',urgency:4},
+];
+
+const RARE_DEMO_DONORS = [
+  {id:'r1',name:'Ahmed I.',country:'🇲🇻',island:'Malé',type:'O-',   lastDon:'3 months ago',donations:12,available:true},
+  {id:'r2',name:'Fatima S.',country:'🇲🇻',island:'Addu',type:'O-',  lastDon:'5 months ago',donations:8, available:true},
+  {id:'r3',name:'Priya K.',country:'🇮🇳', island:'Mumbai',type:'B-', lastDon:'2 months ago',donations:5, available:false},
+  {id:'r4',name:'Ali M.',  country:'🇲🇻',island:'Hulhumalé',type:'AB-',lastDon:'6 months ago',donations:3,available:true},
+  {id:'r5',name:'Sara J.', country:'🇬🇧', island:'London',type:'Rh-null',lastDon:'1 year ago',donations:2,available:true},
+  {id:'r6',name:'Ravi P.', country:'🇮🇳', island:'Chennai',type:'Bombay',lastDon:'8 months ago',donations:4,available:false},
+  {id:'r7',name:'Hana A.', country:'🇲🇻',island:'Malé',type:'A-',   lastDon:'1 month ago',donations:15,available:true},
+  {id:'r8',name:'Omar K.', country:'🇸🇦', island:'Riyadh',type:'O-', lastDon:'2 months ago',donations:20,available:true},
+];
+
+let rareFilter = 'All';
+let rareRegistered = JSON.parse(localStorage.getItem('bb_rare_reg')||'[]');
+
+function renderRareRegistry() {
+  const filtered = rareFilter==='All' ? RARE_DEMO_DONORS : RARE_DEMO_DONORS.filter(d=>d.type===rareFilter);
+  const isRegistered = rareRegistered.includes(currentUser?.id);
+  const totalReg = RARE_DEMO_DONORS.length + rareRegistered.length;
+
+  return `
+  <!-- HERO BANNER -->
+  <div style="background:linear-gradient(135deg,#B71C1C,#E53935);border-radius:20px;padding:20px;margin-bottom:16px;color:#fff;position:relative;overflow:hidden">
+    <div style="position:absolute;right:-10px;top:-10px;font-size:80px;opacity:.12">🩸</div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">BLOODBRIDGE GLOBAL</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:4px">Rare Blood Registry</div>
+    <div style="font-size:12px;opacity:.85;line-height:1.5">Connecting people with rare blood types worldwide. Your rare blood could save a life that no one else can.</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.2);text-align:center">
+      <div><div style="font-size:22px;font-weight:900">${totalReg}</div><div style="font-size:9px;opacity:.7;text-transform:uppercase">Registered</div></div>
+      <div style="border-left:1px solid rgba(255,255,255,.2);border-right:1px solid rgba(255,255,255,.2)"><div style="font-size:22px;font-weight:900">28</div><div style="font-size:9px;opacity:.7;text-transform:uppercase">Countries</div></div>
+      <div><div style="font-size:22px;font-weight:900">8</div><div style="font-size:9px;opacity:.7;text-transform:uppercase">Rare Types</div></div>
+    </div>
+  </div>
+
+  <!-- REGISTER BANNER -->
+  ${!isRegistered && currentUser ? `
+  <div style="background:#fff;border:2px dashed var(--red);border-radius:16px;padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
+    <div style="font-size:30px">🩸</div>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:700;color:var(--t)">Register as Rare Donor</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:2px">Join the global registry and be found in emergencies</div>
+    </div>
+    <button class="btn btn-red btn-sm" onclick="registerRare()">Register</button>
+  </div>` : isRegistered ? `
+  <div style="background:#E8F5E9;border:1px solid #A5D6A7;border-radius:14px;padding:14px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+    <div style="font-size:24px">✅</div>
+    <div><div style="font-size:13px;font-weight:700;color:#2E7D32">You are registered!</div><div style="font-size:11px;color:#4CAF50">Your profile is visible in the Global Registry</div></div>
+  </div>` : ''}
+
+  <!-- RARE TYPES OVERVIEW -->
+  <div style="font-size:14px;font-weight:800;color:var(--t);margin-bottom:10px">Rare Blood Types</div>
+  <div style="overflow-x:auto;scrollbar-width:none;margin-bottom:16px">
+    <div style="display:flex;gap:8px;min-width:max-content;padding-bottom:4px">
+      <div onclick="filterRare('All',this)" style="padding:6px 14px;border-radius:20px;border:1px solid var(--red);background:var(--red);color:#fff;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap" id="rt-All">All Types</div>
+      ${RARE_TYPES.map(r=>`<div onclick="filterRare('${r.type}',this)" id="rt-${r.type.replace('+','p').replace('-','m').replace(' ','_')}" style="padding:6px 14px;border-radius:20px;border:1px solid ${r.color};background:#fff;color:${r.color};font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">${r.type}</div>`).join('')}
+    </div>
+  </div>
+
+  <!-- RARITY CARDS -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+    ${RARE_TYPES.slice(0,4).map(r=>{
+      const count = RARE_DEMO_DONORS.filter(d=>d.type===r.type).length;
+      return `<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:var(--shadow)" onclick="filterRare('${r.type}',null)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div style="width:36px;height:36px;border-radius:10px;background:${r.color}15;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:${r.color}">${r.type}</div>
+          <span style="font-size:9px;padding:2px 7px;border-radius:10px;background:${r.color}15;color:${r.color};font-weight:700">${r.rarity}</span>
+        </div>
+        <div style="font-size:11px;color:var(--t3)">${r.pct} of population</div>
+        <div style="font-size:12px;font-weight:700;color:var(--t);margin-top:2px">${count} registered</div>
+        <div style="height:3px;background:var(--s3);border-radius:2px;margin-top:8px;overflow:hidden"><div style="height:100%;background:${r.color};width:${Math.min(count*20,100)}%;border-radius:2px"></div></div>
+      </div>`;
+    }).join('')}
+  </div>
+
+  <!-- ULTRA RARE ALERT -->
+  <div style="background:#FFF3E0;border:1px solid #FFB74D;border-radius:14px;padding:14px;margin-bottom:16px">
+    <div style="font-size:12px;font-weight:800;color:#E65100;margin-bottom:6px">⚠️ Ultra Rare Types Worldwide</div>
+    ${RARE_TYPES.filter(r=>r.rarity==='Ultra Rare').map(r=>`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <div style="width:38px;height:22px;background:${r.color};border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;flex-shrink:0">${r.type}</div>
+      <div style="font-size:11px;color:#5D4037;line-height:1.4">${r.desc}</div>
+    </div>`).join('')}
+  </div>
+
+  <!-- DONORS LIST -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <div style="font-size:14px;font-weight:800;color:var(--t)">Registered Donors (${filtered.length})</div>
+    <button style="background:none;border:none;font-size:12px;color:var(--red);font-weight:600;cursor:pointer" onclick="navigate('map');setbn('map')">🗺 View Map</button>
+  </div>
+  ${filtered.map(d=>{
+    const rt = RARE_TYPES.find(r=>r.type===d.type)||{color:'var(--red)',rarity:'Rare'};
+    return `<div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)">
+      <div style="width:44px;height:44px;border-radius:50%;background:${rt.color}20;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:${rt.color};border:2px solid ${rt.color}40;flex-shrink:0">${d.type}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="font-size:13px;font-weight:700;color:var(--t)">${d.name}</div>
+          <span style="font-size:14px">${d.country}</span>
+        </div>
+        <div style="font-size:11px;color:var(--t3);margin-top:1px">📍 ${d.island} · ${d.donations} donations · Last: ${d.lastDon}</div>
+        <div style="margin-top:4px"><span style="font-size:9px;padding:2px 8px;border-radius:10px;background:${rt.color}15;color:${rt.color};font-weight:700">${rt.rarity}</span> ${d.available?`<span style="font-size:9px;padding:2px 8px;border-radius:10px;background:#E8F5E9;color:#2E7D32;font-weight:700;margin-left:4px">✓ Available</span>`:`<span style="font-size:9px;padding:2px 8px;border-radius:10px;background:#FFF3E0;color:#E65100;font-weight:700;margin-left:4px">On cooldown</span>`}</div>
+      </div>
+      ${d.available?`<button style="background:var(--red);color:#fff;border:none;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit" onclick="contactRareDonor('${d.id}','${d.type}')">Contact</button>`:''}
+    </div>`;
+  }).join('')}
+  ${!filtered.length?`<div class="empty"><div class="empty-icon">🩸</div><div>No donors found for this blood type</div><button class="btn btn-red btn-sm" style="margin-top:12px" onclick="registerRare()">Be the first to register</button></div>`:''}
+
+  <!-- EMERGENCY CONTACT -->
+  <div style="background:linear-gradient(135deg,#B71C1C,#E53935);border-radius:16px;padding:16px;margin-top:8px;color:#fff;text-align:center">
+    <div style="font-size:14px;font-weight:800;margin-bottom:4px">🚨 Need Rare Blood Urgently?</div>
+    <div style="font-size:11px;opacity:.85;margin-bottom:12px">Our 24/7 team will contact registered rare donors immediately</div>
+    <button style="background:#fff;color:var(--red);border:none;border-radius:20px;padding:10px 24px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit" onclick="openEmer()">Send Emergency Alert</button>
+  </div>`;
+}
+
+function filterRare(type, el) {
+  rareFilter = type;
+  navigate('rare-registry');
+}
+
+function registerRare() {
+  if (!currentUser) { toast('Please sign in first','error'); return; }
+  if (rareRegistered.includes(currentUser.id)) { toast('Already registered!','info'); return; }
+  const rare = ['O-','B-','A-','AB-','Rh-null','Bombay'].includes(currentUser.bloodGroup||'');
+  if (!rare && currentUser.bloodGroup) {
+    const confirm = window.confirm(`Your blood group (${currentUser.bloodGroup}) is not in our rare types list. Register anyway for rare status consideration?`);
+    if (!confirm) return;
+  }
+  rareRegistered.push(currentUser.id);
+  localStorage.setItem('bb_rare_reg', JSON.stringify(rareRegistered));
+  toast('🩸 Registered in Global Rare Blood Registry!','success');
+  setTimeout(()=>toast('You can now be found by hospitals worldwide 🌍','info'),1500);
+  navigate('rare-registry');
+}
+
+function contactRareDonor(id, type) {
+  toast(`Connecting with ${type} donor...`,'info');
+  setTimeout(()=>toast('Message sent! Donor will respond within 24h','success'),1200);
+}
+
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 
 window.addEventListener('online', ()=>document.body.classList.remove('offline'));
