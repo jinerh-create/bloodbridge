@@ -431,6 +431,7 @@ body.offline #offline-banner{display:block}
       <span class="tb-title">BLOODBRIDGE</span>
     </div>
     <div class="tb-right">
+      <button onclick="setLang(currentLang==='en'?'dv':'en')" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:10px;font-weight:700;color:var(--t2);cursor:pointer;font-family:inherit">🌐 ${currentLang==='en'?'DV':'EN'}</button>
       <button class="emer-btn" onclick="openEmer()" style="font-size:10px;padding:5px 10px">🚨 SOS</button>
       <div class="tb-btn" onclick="navigate('notifications')" title="Notifications">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"/></svg>
@@ -633,7 +634,9 @@ function navigate(p){
     history:renderHistory, appointments:renderAppointments,
     camps:renderCamps, notifications:renderNotifications,
     hospital:renderHospital, admin:renderAdmin,
-    'donate-form':renderDonateForm, 'rare-registry':renderRareRegistry
+    'donate-form':renderDonateForm, 'rare-registry':renderRareRegistry,
+    'intl-search':renderIntlSearch, 'rare-management':renderRareManagement,
+    'donor-passport':renderDonorPassport, 'global-analytics':renderGlobalAnalytics
   };
   const fn=renders[p];
   document.getElementById('page').innerHTML=fn?fn():'<div class="empty"><div class="empty-icon">🔍</div><div>Page not found</div></div>';
@@ -732,6 +735,10 @@ function renderHome(){
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('appointments')">📅 Book Appt</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('ai')">🤖 AI Helper</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1;border-color:rgba(183,28,28,.3);color:#B71C1C" onclick="navigate('rare-registry');setbn('')">🩸 Rare Blood Registry</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('donor-passport');setbn('')">🪪 Donor Passport</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('intl-search');setbn('')">🌍 Intl. Donor Search</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('global-analytics');setbn('')">📊 Global Analytics</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('rare-management');setbn('')">🔬 Rare Blood Mgmt</button>
   </div>
 
   <div class="sec-hdr"><div class="sec-title">🌟 Community</div><button class="sec-link" onclick="navigate('community')">See All</button></div>
@@ -1522,6 +1529,415 @@ function registerRare() {
 function contactRareDonor(id, type) {
   toast(`Connecting with ${type} donor...`,'info');
   setTimeout(()=>toast('Message sent! Donor will respond within 24h','success'),1200);
+}
+
+// ===== MULTI-LANGUAGE =====
+const LANGS = {
+  en: {
+    appName:'BLOODBRIDGE', tagline:'Connecting Hearts · Saving Lives',
+    home:'Home', map:'Map', requests:'Requests', ranks:'Ranks', me:'Me',
+    emergency:'SOS', donate:'Log Donation', search:'Search',
+    donateBlood:'Log a Donation', saveLife:'Save a Life',
+    noRequests:'No active requests', community:'Community',
+    dashboard:'Dashboard', leaderboard:'Leaderboard',
+    rareRegistry:'Rare Blood Registry', intlSearch:'International Search',
+    rareManagement:'Rare Blood Management', settings:'Settings',
+    signIn:'Sign In', register:'Register', signOut:'Sign Out',
+    bloodGroup:'Blood Group', country:'Country', island:'Island / City',
+    available:'Available', onCooldown:'On Cooldown',
+    totalDonations:'Total Donations', liveSaved:'Lives Saved',
+  },
+  dv: {
+    appName:'ބްލަޑްބްރިޖް', tagline:'ހިތްތައް ގުޅާ · ފުރާނަ ސަލާމަތްކުރޭ',
+    home:'ހޯމް', map:'地図', requests:'ބޭނުންތައް', ranks:'ރޭންކް', me:'ތިން',
+    emergency:'救援', donate:'ލޭ ހަދިޔާ', search:'ހޯދާ',
+    donateBlood:'ލޭ ހަދިޔާ ލޮގް ކުރާ', saveLife:'ފުރާނަ ސަލާމަތްކުރޭ',
+    noRequests:'ހުށަހެޅި ބޭނުމެއް ނެތް', community:'ހ.ހ.ދ',
+    dashboard:'ޑޭޝްބޯޑް', leaderboard:'ލީޑަރ ބޯޑް',
+    rareRegistry:'ހުދު ލޭ ރެޖިސްޓްރީ', intlSearch:'ބައިނަލްއަގުވާމީ ހޯދުން',
+    rareManagement:'ހުދު ލޭ ތަންފީޒް', settings:'ސެޓިންގްތައް',
+    signIn:'ވަދެ', register:'ރަޖިސްޓްރީ', signOut:'ނިކުމޭ',
+    bloodGroup:'ލޭ ގިންތި', country:'ގައުމު', island:'ރަށް / ސިޓީ',
+    available:'ތައްޔާރު', onCooldown:'ހިސްޓޯ',
+    totalDonations:'ލޭ ހަދިޔާ', liveSaved:'ފުރާނަ',
+  }
+};
+let currentLang = localStorage.getItem('bb_lang') || 'en';
+function t(k) { return LANGS[currentLang]?.[k] || LANGS.en[k] || k; }
+function setLang(l) {
+  currentLang = l;
+  localStorage.setItem('bb_lang', l);
+  routeFromHash();
+}
+
+// ===== COUNTRIES =====
+const COUNTRIES = [
+  {code:'MV',name:'Maldives',flag:'🇲🇻'},
+  {code:'IN',name:'India',flag:'🇮🇳'},
+  {code:'LK',name:'Sri Lanka',flag:'🇱🇰'},
+  {code:'PK',name:'Pakistan',flag:'🇵🇰'},
+  {code:'BD',name:'Bangladesh',flag:'🇧🇩'},
+  {code:'GB',name:'United Kingdom',flag:'🇬🇧'},
+  {code:'AE',name:'UAE',flag:'🇦🇪'},
+  {code:'SA',name:'Saudi Arabia',flag:'🇸🇦'},
+  {code:'MY',name:'Malaysia',flag:'🇲🇾'},
+  {code:'SG',name:'Singapore',flag:'🇸🇬'},
+  {code:'AU',name:'Australia',flag:'🇦🇺'},
+  {code:'US',name:'United States',flag:'🇺🇸'},
+  {code:'OTHER',name:'Other',flag:'🌍'},
+];
+function getCountry(code) { return COUNTRIES.find(c=>c.code===code)||{code:'OTHER',name:'Other',flag:'🌍'}; }
+
+// ===== INTERNATIONAL DONOR SEARCH =====
+const INTL_DONORS = [
+  {id:'i1',name:'Rahul K.',country:'IN',city:'Mumbai',blood:'O-',available:true,donations:12,lastDon:'1 month ago'},
+  {id:'i2',name:'Priya S.',country:'IN',city:'Delhi',blood:'B-',available:true,donations:8,lastDon:'2 months ago'},
+  {id:'i3',name:'Omar A.',country:'AE',city:'Dubai',blood:'AB-',available:false,donations:5,lastDon:'1 month ago'},
+  {id:'i4',name:'Sara J.',country:'GB',city:'London',blood:'O-',available:true,donations:20,lastDon:'3 months ago'},
+  {id:'i5',name:'Karim H.',country:'SA',city:'Riyadh',blood:'A-',available:true,donations:15,lastDon:'2 months ago'},
+  {id:'i6',name:'Nimal P.',country:'LK',city:'Colombo',blood:'B+',available:true,donations:9,lastDon:'6 weeks ago'},
+  {id:'i7',name:'Tariq M.',country:'PK',city:'Karachi',blood:'O+',available:false,donations:6,lastDon:'3 weeks ago'},
+  {id:'i8',name:'Asha R.',country:'BD',city:'Dhaka',blood:'A+',available:true,donations:11,lastDon:'5 weeks ago'},
+  {id:'i9',name:'Wei L.',country:'SG',city:'Singapore',blood:'AB+',available:true,donations:7,lastDon:'2 months ago'},
+  {id:'i10',name:'Ahmed M.',country:'MV',city:'Malé',blood:'O-',available:true,donations:18,lastDon:'2 months ago'},
+];
+
+let intlSearchBlood = '';
+let intlSearchCountry = '';
+let intlSearchQuery = '';
+
+function renderIntlSearch() {
+  const filtered = INTL_DONORS.filter(d=>
+    (!intlSearchBlood || d.blood === intlSearchBlood) &&
+    (!intlSearchCountry || d.country === intlSearchCountry) &&
+    (!intlSearchQuery || d.name.toLowerCase().includes(intlSearchQuery.toLowerCase()) || d.city.toLowerCase().includes(intlSearchQuery.toLowerCase()))
+  );
+
+  return `
+  <div style="background:linear-gradient(135deg,var(--red),var(--reddark));border-radius:20px;padding:18px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden">
+    <div style="position:absolute;right:-10px;top:-10px;font-size:70px;opacity:.1">🌍</div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">BLOODBRIDGE GLOBAL</div>
+    <div style="font-size:17px;font-weight:900;margin-bottom:2px">International Donor Search</div>
+    <div style="font-size:11px;opacity:.8">Find blood donors across ${COUNTRIES.length} countries worldwide</div>
+  </div>
+
+  <!-- SEARCH FILTERS -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="fr2">
+      <div>
+        <label>Blood Group</label>
+        <select id="is-blood" onchange="intlSearchBlood=this.value;navigate('intl-search')">
+          <option value="">All Blood Groups</option>
+          ${['A+','A-','B+','B-','O+','O-','AB+','AB-'].map(b=>`<option value="${b}" ${intlSearchBlood===b?'selected':''}>${b}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label>Country</label>
+        <select id="is-country" onchange="intlSearchCountry=this.value;navigate('intl-search')">
+          <option value="">All Countries</option>
+          ${COUNTRIES.map(c=>`<option value="${c.code}" ${intlSearchCountry===c.code?'selected':''}>${c.flag} ${c.name}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:0">
+      <label>Search by name or city</label>
+      <input id="is-query" placeholder="Search donors..." value="${intlSearchQuery}" oninput="intlSearchQuery=this.value;navigate('intl-search')">
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <div style="font-size:13px;font-weight:700;color:var(--t)">${filtered.length} donors found</div>
+    <div style="font-size:11px;color:var(--t3)">${INTL_DONORS.length} total registered</div>
+  </div>
+
+  ${filtered.map(d=>{
+    const c=getCountry(d.country);
+    return `<div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)">
+      <div style="width:44px;height:44px;border-radius:50%;background:rgba(229,57,53,.12);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:var(--red);flex-shrink:0;border:2px solid rgba(229,57,53,.25)">${d.blood}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span style="font-size:13px;font-weight:700;color:var(--t)">${d.name}</span>
+          <span style="font-size:16px">${c.flag}</span>
+          <span style="font-size:10px;color:var(--t3)">${c.name}</span>
+        </div>
+        <div style="font-size:11px;color:var(--t3);margin-top:1px">📍 ${d.city} · ${d.donations} donations · Last: ${d.lastDon}</div>
+        <div style="margin-top:4px">
+          <span style="font-size:9px;padding:2px 8px;border-radius:10px;font-weight:700;background:${d.available?'#E8F5E9':'#FFF3E0'};color:${d.available?'#2E7D32':'#E65100'}">${d.available?'✓ Available':'⏳ On cooldown'}</span>
+        </div>
+      </div>
+      ${d.available?`<button style="background:var(--red);color:#fff;border:none;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0" onclick="toast('Message sent to ${d.name}!','success')">Contact</button>`:''}
+    </div>`;
+  }).join('')}
+  ${!filtered.length?`<div class="empty"><div class="empty-icon">🌍</div><div style="font-size:13px;font-weight:600;color:var(--t2)">No donors found</div><div style="margin-top:4px">Try different filters</div></div>`:''}`;
+}
+
+// ===== RARE BLOOD MANAGEMENT =====
+function renderRareManagement() {
+  const totalRare = RARE_DEMO_DONORS.length + rareRegistered.length;
+  const available = RARE_DEMO_DONORS.filter(d=>d.available).length;
+  const critical = RARE_TYPES.filter(r=>r.urgency>=4);
+
+  return `
+  <div style="background:linear-gradient(135deg,#B71C1C,#E53935);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">ADMIN / HOSPITAL</div>
+    <div style="font-size:17px;font-weight:900;margin-bottom:2px">Rare Blood Management</div>
+    <div style="font-size:11px;opacity:.8">Monitor and manage rare blood donors worldwide</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.2);text-align:center">
+      <div><div style="font-size:22px;font-weight:900">${totalRare}</div><div style="font-size:9px;opacity:.7">Registered</div></div>
+      <div style="border-left:1px solid rgba(255,255,255,.2);border-right:1px solid rgba(255,255,255,.2)"><div style="font-size:22px;font-weight:900">${available}</div><div style="font-size:9px;opacity:.7">Available</div></div>
+      <div><div style="font-size:22px;font-weight:900">${critical.length}</div><div style="font-size:9px;opacity:.7">Critical Types</div></div>
+    </div>
+  </div>
+
+  <!-- CRITICAL ALERTS -->
+  <div style="font-size:13px;font-weight:800;color:var(--t);margin-bottom:8px">⚠️ Critical Blood Types</div>
+  ${critical.map(r=>{
+    const donors = RARE_DEMO_DONORS.filter(d=>d.type===r.type);
+    const avail = donors.filter(d=>d.available).length;
+    return `<div style="background:#fff;border:1px solid ${r.color}30;border-left:4px solid ${r.color};border-radius:12px;padding:12px 14px;margin-bottom:8px;box-shadow:var(--shadow)">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:38px;height:38px;border-radius:10px;background:${r.color}15;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:${r.color}">${r.type}</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--t)">${r.rarity}</div>
+            <div style="font-size:10px;color:var(--t3)">${r.pct} of population · ${donors.length} registered</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:13px;font-weight:800;color:${avail>0?'#2E7D32':r.color}">${avail} available</div>
+          <button style="background:${r.color};color:#fff;border:none;border-radius:8px;padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px" onclick="alertRareDonors('${r.type}')">Alert All</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('')}
+
+  <!-- ALL RARE DONORS TABLE -->
+  <div style="font-size:13px;font-weight:800;color:var(--t);margin:14px 0 8px">All Rare Donors</div>
+  <div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border);box-shadow:var(--shadow)">
+    <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:500px">
+      <thead style="background:var(--s2)">
+        <tr>
+          <th style="padding:9px 12px;text-align:left;font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em">Donor</th>
+          <th style="padding:9px 12px;text-align:center;font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase">Type</th>
+          <th style="padding:9px 12px;text-align:center;font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase">Location</th>
+          <th style="padding:9px 12px;text-align:center;font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase">Donations</th>
+          <th style="padding:9px 12px;text-align:center;font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase">Status</th>
+          <th style="padding:9px 12px;text-align:center;font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${RARE_DEMO_DONORS.map(d=>{
+          const rt=RARE_TYPES.find(r=>r.type===d.type)||{color:'var(--red)',rarity:'Rare'};
+          return `<tr style="border-top:1px solid var(--border)">
+            <td style="padding:10px 12px;font-weight:600;color:var(--t)">${d.name} <span style="font-size:14px">${d.country}</span></td>
+            <td style="padding:10px 12px;text-align:center"><span style="background:${rt.color}15;color:${rt.color};font-size:11px;font-weight:900;padding:3px 8px;border-radius:8px">${d.type}</span></td>
+            <td style="padding:10px 12px;text-align:center;color:var(--t3);font-size:11px">${d.island}</td>
+            <td style="padding:10px 12px;text-align:center;font-weight:700;color:var(--t)">${d.donations}</td>
+            <td style="padding:10px 12px;text-align:center"><span style="font-size:9px;padding:2px 8px;border-radius:10px;font-weight:700;background:${d.available?'#E8F5E9':'#FFF3E0'};color:${d.available?'#2E7D32':'#E65100'}">${d.available?'Available':'Cooldown'}</span></td>
+            <td style="padding:10px 12px;text-align:center"><button style="background:var(--red);color:#fff;border:none;border-radius:7px;padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit" onclick="toast('Alert sent to ${d.name}','success')">Alert</button></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- EXPORT BUTTONS -->
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button class="btn btn-ghost btn-sm" style="flex:1" onclick="toast('Report exported','success')">📊 Export Report</button>
+    <button class="btn btn-ghost btn-sm" style="flex:1" onclick="sendBulkAlert()">📲 Bulk Alert</button>
+  </div>`;
+}
+
+// ===== DONOR PASSPORT =====
+function renderDonorPassport() {
+  const u = currentUser || {name:'Guest',bloodGroup:'O+',xp:0,donations:0,island:'',id:'GUEST'};
+  const rank = getRank(u.xp);
+  const myDonations = donations.filter(d=>d.donorId===u.id);
+  const healthScore = Math.min(100, 60 + (u.donations||0)*4);
+  const lastDon = myDonations.sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
+  const nextEligible = lastDon ? new Date(new Date(lastDon.date).getTime()+90*864e5) : null;
+  const daysLeft = nextEligible ? Math.max(0,Math.ceil((nextEligible-new Date())/864e5)) : 0;
+  const eligible = !nextEligible || new Date()>nextEligible;
+
+  const heatmapMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const donsByMonth = heatmapMonths.map(m=>myDonations.filter(d=>new Date(d.date).toLocaleString('en',{month:'short'})===m).length);
+
+  return `
+  <!-- PASSPORT CARD -->
+  <div style="background:linear-gradient(135deg,#1a0a0a,#DC143C,#8B0000);border-radius:20px;padding:20px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(220,20,60,.4)">
+    <div style="position:absolute;right:-20px;top:-20px;width:120px;height:120px;background:rgba(255,255,255,.06);border-radius:50%"></div>
+    <div style="position:absolute;right:20px;bottom:-30px;width:80px;height:80px;background:rgba(255,255,255,.04);border-radius:50%"></div>
+    <div style="font-size:9px;font-weight:700;letter-spacing:.15em;opacity:.7;margin-bottom:12px">🩸 BLOODBRIDGE · DONOR PASSPORT</div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <div style="font-size:22px;font-weight:900">${u.name}</div>
+        <div style="font-size:11px;opacity:.75;margin-top:2px">ID: ${(u.id||'').slice(0,12).toUpperCase()}</div>
+        <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
+          <div style="background:rgba(255,255,255,.2);border-radius:10px;padding:8px 14px;text-align:center">
+            <div style="font-size:22px;font-weight:900">${u.bloodGroup||'—'}</div>
+            <div style="font-size:9px;opacity:.7">BLOOD TYPE</div>
+          </div>
+          <div>
+            <div style="font-size:16px;font-weight:800">${rank.emoji} ${rank.name}</div>
+            <div style="font-size:10px;opacity:.75">${u.donations||0} donations · ${u.xp||0} XP</div>
+            <div style="font-size:10px;opacity:.75">${u.island||'Maldives'}</div>
+          </div>
+        </div>
+      </div>
+      <div id="pp-qr" style="background:#fff;border-radius:10px;padding:6px;width:64px;height:64px;flex-shrink:0"></div>
+    </div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2);display:flex;justify-content:space-between;font-size:10px;opacity:.8">
+      <span>Issued: ${new Date().toLocaleDateString()}</span>
+      <span>Valid: Lifetime</span>
+      <span>🌍 Global Registry</span>
+    </div>
+  </div>
+
+  <!-- HEALTH SCORE -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">💪 Donor Health Score</div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <div style="width:70px;height:70px;border-radius:50%;background:conic-gradient(var(--green) ${healthScore}%,var(--s3) 0%);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <div style="width:54px;height:54px;border-radius:50%;background:var(--s1);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:var(--green)">${healthScore}</div>
+      </div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700;color:var(--t)">Score: ${healthScore}/100</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">${healthScore>=80?'Excellent donor health!':healthScore>=60?'Good — keep donating':'New donor — building score'}</div>
+        <div style="height:5px;background:var(--s3);border-radius:3px;margin-top:8px;overflow:hidden"><div style="height:100%;width:${healthScore}%;background:var(--green);border-radius:3px"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ELIGIBILITY + COUNTDOWN -->
+  <div class="g2" style="margin-bottom:12px">
+    <div class="card">
+      <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">⏱ Next Donation</div>
+      ${eligible?`<div style="font-size:15px;font-weight:800;color:var(--green)">✓ Eligible Now!</div><div style="font-size:10px;color:var(--t3);margin-top:2px">You can donate today</div>`:`<div style="font-size:24px;font-weight:900;color:var(--gold)">${daysLeft}</div><div style="font-size:11px;color:var(--t3)">days remaining</div>`}
+    </div>
+    <div class="card">
+      <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">🎯 Goal</div>
+      <div style="font-size:24px;font-weight:900;color:var(--red)">${u.donations||0}/12</div>
+      <div style="font-size:11px;color:var(--t3)">donations this year</div>
+      <div style="height:4px;background:var(--s3);border-radius:2px;margin-top:6px;overflow:hidden"><div style="height:100%;width:${Math.min((u.donations||0)/12*100,100)}%;background:var(--red);border-radius:2px"></div></div>
+    </div>
+  </div>
+
+  <!-- DONATION HEATMAP -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">📅 Donation Heatmap</div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px">
+      ${heatmapMonths.map((m,i)=>`<div style="text-align:center">
+        <div style="width:100%;padding-top:100%;position:relative;border-radius:6px;background:${donsByMonth[i]>0?'var(--red)':'var(--s3)'};opacity:${donsByMonth[i]>0?1:0.4}"></div>
+        <div style="font-size:8px;color:var(--t3);margin-top:2px">${m}</div>
+      </div>`).join('')}
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:10px;color:var(--t3)">
+      <div style="width:10px;height:10px;border-radius:2px;background:var(--s3);opacity:.4"></div> No donation
+      <div style="width:10px;height:10px;border-radius:2px;background:var(--red)"></div> Donated
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="card">
+    <div class="ct">📖 Donation Journal</div>
+    ${myDonations.length?myDonations.slice(0,5).map((d,i)=>`
+    <div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--red);margin-top:4px;flex-shrink:0"></div>
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:700;color:var(--t)">${d.hospital||'Blood Bank'} — ${d.bloodGroup}</div>
+        <div style="font-size:10px;color:var(--t3)">${new Date(d.date).toLocaleDateString()} · +${d.xp||100} XP</div>
+      </div>
+    </div>`).join(''):`<div style="text-align:center;padding:16px;color:var(--t3);font-size:12px">No donations logged yet</div>`}
+  </div>`;
+}
+
+// ===== GLOBAL ANALYTICS =====
+function renderGlobalAnalytics() {
+  const totalDonors = donors.length + 1247;
+  const totalDonations = donations.length + 8432;
+  const livesSaved = Math.floor(totalDonations * 2.7);
+  const countries = COUNTRIES.length;
+
+  return `
+  <div style="font-size:15px;font-weight:800;color:var(--t);margin-bottom:12px">🌍 Global Analytics</div>
+
+  <!-- KEY STATS -->
+  <div class="g2" style="margin-bottom:14px">
+    <div class="stat-card" style="border-left:3px solid var(--red)">
+      <div class="sl">Total Donors</div>
+      <div class="sv" style="font-size:24px">${totalDonors.toLocaleString()}</div>
+      <div style="font-size:10px;color:var(--green)">↑ +12 this week</div>
+    </div>
+    <div class="stat-card" style="border-left:3px solid var(--green)">
+      <div class="sl">Lives Saved</div>
+      <div class="sv" style="font-size:24px;color:var(--green)">${livesSaved.toLocaleString()}</div>
+      <div style="font-size:10px;color:var(--green)">↑ +34 this month</div>
+    </div>
+    <div class="stat-card" style="border-left:3px solid var(--blue)">
+      <div class="sl">Total Donations</div>
+      <div class="sv" style="font-size:24px;color:var(--blue)">${totalDonations.toLocaleString()}</div>
+      <div style="font-size:10px;color:var(--t3)">${countries} countries</div>
+    </div>
+    <div class="stat-card" style="border-left:3px solid var(--gold)">
+      <div class="sl">Emergency Response</div>
+      <div class="sv" style="font-size:24px;color:var(--gold)">8.2 min</div>
+      <div style="font-size:10px;color:var(--green)">↓ avg response time</div>
+    </div>
+  </div>
+
+  <!-- DONATIONS BY COUNTRY -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">🌍 Donations by Country</div>
+    ${[{name:'Maldives',flag:'🇲🇻',count:3241,pct:38},{name:'India',flag:'🇮🇳',count:2108,pct:25},{name:'Sri Lanka',flag:'🇱🇰',count:892,pct:11},{name:'UAE',flag:'🇦🇪',count:743,pct:9},{name:'UK',flag:'🇬🇧',count:621,pct:7},{name:'Other',flag:'🌍',count:827,pct:10}].map(c=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:18px;flex-shrink:0">${c.flag}</span>
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+          <span style="font-size:12px;font-weight:600;color:var(--t)">${c.name}</span>
+          <span style="font-size:11px;font-weight:700;color:var(--red)">${c.count.toLocaleString()}</span>
+        </div>
+        <div style="height:4px;background:var(--s3);border-radius:2px;overflow:hidden"><div style="height:100%;width:${c.pct}%;background:var(--red);border-radius:2px"></div></div>
+      </div>
+    </div>`).join('')}
+  </div>
+
+  <!-- RARE BLOOD STATUS -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">🩸 Rare Blood Availability</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+      ${RARE_TYPES.slice(0,8).map(r=>{
+        const avail = RARE_DEMO_DONORS.filter(d=>d.type===r.type&&d.available).length;
+        return `<div style="background:var(--s2);border:1px solid ${r.color}30;border-radius:10px;padding:10px 6px;text-align:center">
+          <div style="font-size:12px;font-weight:900;color:${r.color}">${r.type}</div>
+          <div style="font-size:16px;font-weight:800;color:${avail>0?'#2E7D32':r.color};margin:4px 0">${avail}</div>
+          <div style="font-size:8px;color:var(--t3)">available</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+
+  <!-- BLOOD SHORTAGES -->
+  <div class="card">
+    <div class="ct">⚠️ Current Shortages</div>
+    ${[{type:'O-',shortage:'Critical',country:'🇲🇻 Maldives'},{type:'AB-',shortage:'Low',country:'🌍 Global'},{type:'B-',shortage:'Low',country:'🇱🇰 Sri Lanka'}].map(s=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(220,38,38,.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:var(--danger)">${s.type}</div>
+        <div><div style="font-size:12px;font-weight:600;color:var(--t)">${s.country}</div><div style="font-size:10px;color:var(--t3)">Shortage detected</div></div>
+      </div>
+      <span style="font-size:10px;padding:3px 10px;border-radius:10px;font-weight:700;background:${s.shortage==='Critical'?'rgba(220,38,38,.12)':'rgba(245,158,11,.12)'};color:${s.shortage==='Critical'?'var(--danger)':'var(--gold)'}">${s.shortage}</span>
+    </div>`).join('')}
+    <button class="btn btn-red btn-sm" style="width:100%;margin-top:10px" onclick="openEmer()">🚨 Send Emergency Alert</button>
+  </div>`;
+}
+
+function alertRareDonors(type) {
+  const donors = RARE_DEMO_DONORS.filter(d=>d.type===type&&d.available);
+  toast(`🚨 Alert sent to ${donors.length} ${type} donors!`,'success');
+  setTimeout(()=>toast(`📲 WhatsApp + SMS sent`,'info'),1000);
+}
+function sendBulkAlert() {
+  toast(`🚨 Emergency alert sent to all ${RARE_DEMO_DONORS.length} rare donors!`,'success');
 }
 
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
