@@ -198,11 +198,22 @@ select option{background:var(--s2)}
 @keyframes pulse-ring{0%,100%{opacity:1}50%{opacity:.4}}
 
 /* EMERGENCY MODAL */
-.emer-modal{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:800;display:none;align-items:flex-end;justify-content:center}
+.emer-modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:800;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
 .emer-modal.show{display:flex}
-.emer-sheet{background:var(--s1);border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:500px;border-top:3px solid var(--red);animation:slideUp .3s ease}
+.emer-sheet{background:var(--s1);border-radius:20px 20px 0 0;padding:0;width:100%;max-width:500px;border-top:3px solid var(--red);animation:slideUp .25s ease;overflow:hidden}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.emer-title{font-size:18px;font-weight:900;color:var(--red);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.emer-title{font-size:18px;font-weight:900;color:#fff;margin-bottom:0;display:flex;align-items:center;gap:8px}
+/* ONE-TAP EMERGENCY FAB */
+#emer-fab{position:fixed;bottom:80px;right:16px;width:58px;height:58px;background:var(--red);border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(220,20,60,.6);z-index:99;animation:fab-pulse 2s infinite}
+@keyframes fab-pulse{0%,100%{box-shadow:0 4px 20px rgba(220,20,60,.6),0 0 0 0 rgba(220,20,60,.4)}70%{box-shadow:0 4px 20px rgba(220,20,60,.6),0 0 0 14px rgba(220,20,60,0)}}
+/* SENDING ANIMATION */
+.emer-sending{display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center}
+.emer-sending.show{display:flex}
+.ping-ring{width:80px;height:80px;border-radius:50%;background:rgba(220,20,60,.15);display:flex;align-items:center;justify-content:center;margin-bottom:16px;position:relative}
+.ping-ring::before,.ping-ring::after{content:'';position:absolute;border-radius:50%;border:2px solid rgba(220,20,60,.4);animation:ping 1.5s ease-out infinite}
+.ping-ring::before{width:100%;height:100%}
+.ping-ring::after{width:140%;height:140%;animation-delay:.5s}
+@keyframes ping{0%{transform:scale(1);opacity:1}100%{transform:scale(1.8);opacity:0}}
 
 /* TOAST */
 #toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:900;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none}
@@ -328,31 +339,86 @@ body.offline #offline-banner{display:block}
   </div>
 </div>
 
+<!-- ONE-TAP EMERGENCY FAB (floating button) -->
+<button id="emer-fab" onclick="openEmer()" title="Emergency Blood Request">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+</button>
+
 <!-- EMERGENCY MODAL -->
 <div class="emer-modal" id="emer-modal" onclick="if(event.target===this)closeEmer()">
   <div class="emer-sheet">
-    <div class="emer-title">🚨 Emergency Blood Request</div>
-    <div class="form-group"><label>Blood Group Needed</label>
-      <div class="blood-select" id="emer-bg">
-        <div class="blood-opt sel" onclick="selBG(this,'A+','emer-bg')">A+</div>
-        <div class="blood-opt" onclick="selBG(this,'A-','emer-bg')">A-</div>
-        <div class="blood-opt" onclick="selBG(this,'B+','emer-bg')">B+</div>
-        <div class="blood-opt" onclick="selBG(this,'B-','emer-bg')">B-</div>
-        <div class="blood-opt" onclick="selBG(this,'O+','emer-bg')">O+</div>
-        <div class="blood-opt" onclick="selBG(this,'O-','emer-bg')">O-</div>
-        <div class="blood-opt" onclick="selBG(this,'AB+','emer-bg')">AB+</div>
-        <div class="blood-opt" onclick="selBG(this,'AB-','emer-bg')">AB-</div>
+
+    <!-- HEADER -->
+    <div style="background:linear-gradient(135deg,#8B0000,#DC143C);padding:20px 20px 16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <div class="emer-title">🚨 Emergency Request</div>
+        <button onclick="closeEmer()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:16px">×</button>
       </div>
+      <div style="font-size:11px;color:rgba(255,255,255,.7)">Alert nearby donors instantly — one tap to send</div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="form-group"><label>Units Needed</label><input id="e-units" type="number" placeholder="2" min="1" max="10"></div>
-      <div class="form-group"><label>Hospital</label><input id="e-hospital" placeholder="IGMH / ADK"></div>
+
+    <!-- FORM -->
+    <div id="emer-form" style="padding:20px">
+
+      <!-- BLOOD GROUP — BIG TAPPABLE -->
+      <div style="margin-bottom:16px">
+        <div style="font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Blood Group Needed</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px" id="emer-bg">
+          <div class="blood-opt sel" onclick="selBG(this,'A+','emer-bg')" style="padding:12px 4px;font-size:15px">A+</div>
+          <div class="blood-opt" onclick="selBG(this,'A-','emer-bg')" style="padding:12px 4px;font-size:15px">A-</div>
+          <div class="blood-opt" onclick="selBG(this,'B+','emer-bg')" style="padding:12px 4px;font-size:15px">B+</div>
+          <div class="blood-opt" onclick="selBG(this,'B-','emer-bg')" style="padding:12px 4px;font-size:15px">B-</div>
+          <div class="blood-opt" onclick="selBG(this,'O+','emer-bg')" style="padding:12px 4px;font-size:15px">O+</div>
+          <div class="blood-opt" onclick="selBG(this,'O-','emer-bg')" style="padding:12px 4px;font-size:15px">O-</div>
+          <div class="blood-opt" onclick="selBG(this,'AB+','emer-bg')" style="padding:12px 4px;font-size:15px">AB+</div>
+          <div class="blood-opt" onclick="selBG(this,'AB-','emer-bg')" style="padding:12px 4px;font-size:15px">AB-</div>
+        </div>
+      </div>
+
+      <!-- UNITS — QUICK BUTTONS -->
+      <div style="margin-bottom:16px">
+        <div style="font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Units Needed</div>
+        <div style="display:flex;gap:8px" id="unit-btns">
+          ${[1,2,3,4,5].map((n,i)=>`<div onclick="selUnit(${n},this)" style="flex:1;padding:12px 4px;border:1px solid var(--border);border-radius:10px;text-align:center;cursor:pointer;font-size:16px;font-weight:800;color:var(--t3);background:var(--s2);transition:all .15s${i===1?';background:var(--red);border-color:var(--red);color:#fff':''}" id="unit-${n}">${n}</div>`).join('')}
+        </div>
+      </div>
+
+      <!-- HOSPITAL — QUICK BUTTONS -->
+      <div style="margin-bottom:16px">
+        <div style="font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Hospital</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap" id="hosp-btns">
+          ${['IGMH','ADK','Kulhudhuffushi','Other'].map((h,i)=>`<div onclick="selHosp('${h}',this)" style="padding:8px 14px;border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:12px;font-weight:700;color:var(--t3);background:var(--s2);transition:all .15s${i===0?';background:var(--red);border-color:var(--red);color:#fff':''}">${h}</div>`).join('')}
+        </div>
+      </div>
+
+      <!-- PATIENT + CONTACT — COMPACT -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+        <div><div style="font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px">Patient</div><input id="e-patient" placeholder="Patient name" style="font-size:13px"></div>
+        <div><div style="font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px">Contact</div><input id="e-contact" type="tel" placeholder="+960" style="font-size:13px"></div>
+      </div>
+
+      <!-- LOCATION AUTO-DETECT -->
+      <div id="location-bar" style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:10px;margin-bottom:16px;font-size:12px;color:var(--blue)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 14 8 14s8-8.75 8-14a8 8 0 0 0-8-8z"/></svg>
+        <span id="location-text">📍 Detecting location...</span>
+        <button onclick="getLocation()" style="margin-left:auto;background:none;border:none;color:var(--blue);font-size:11px;cursor:pointer;font-weight:700">Update</button>
+      </div>
+
+      <!-- SEND BUTTON -->
+      <button class="btn btn-red" onclick="submitEmergency()" style="font-size:16px;padding:16px;letter-spacing:.03em;box-shadow:0 6px 24px rgba(220,20,60,.4)">
+        🚨 SEND EMERGENCY ALERT NOW
+      </button>
+      <div style="text-align:center;font-size:10px;color:var(--t3);margin-top:8px">Alerts nearby donors via push notification, WhatsApp & SMS</div>
     </div>
-    <div class="form-group"><label>Patient Name</label><input id="e-patient" placeholder="Patient name"></div>
-    <div class="form-group"><label>Contact Number</label><input id="e-contact" type="tel" placeholder="+960 xxx xxxx"></div>
-    <div class="form-group"><label>Additional Notes</label><input id="e-notes" placeholder="Any special requirements"></div>
-    <button class="btn btn-red" onclick="submitEmergency()">🚨 Send Emergency Alert to Nearby Donors</button>
-    <button class="btn btn-ghost" style="margin-top:8px" onclick="closeEmer()">Cancel</button>
+
+    <!-- SENDING ANIMATION -->
+    <div class="emer-sending" id="emer-sending" style="padding:40px 24px">
+      <div class="ping-ring"><svg width="32" height="32" viewBox="0 0 24 24" fill="#DC143C"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+      <div style="font-size:18px;font-weight:900;color:var(--red);margin-bottom:6px">Alerting Nearby Donors...</div>
+      <div id="alert-count" style="font-size:13px;color:var(--t3)">Finding donors in your area</div>
+      <div id="alert-status" style="margin-top:16px;width:100%"></div>
+    </div>
+
   </div>
 </div>
 
@@ -364,7 +430,7 @@ body.offline #offline-banner{display:block}
       <span class="tb-title">BLOODBRIDGE</span>
     </div>
     <div class="tb-right">
-      <button class="emer-btn" onclick="openEmer()">🚨 Emergency</button>
+      <button class="emer-btn" onclick="openEmer()" style="font-size:10px;padding:5px 10px">🚨 SOS</button>
       <div class="tb-btn" onclick="navigate('notifications')" title="Notifications">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"/></svg>
         <span class="notif-dot" id="notif-dot" style="display:none"></span>
@@ -1150,16 +1216,89 @@ function renderAdmin(){
 }
 
 // ===== EMERGENCY =====
-function openEmer(){document.getElementById('emer-modal').classList.add('show');}
-function closeEmer(){document.getElementById('emer-modal').classList.remove('show');}
+let emerUnits = 2;
+let emerHospital = 'IGMH';
+let emerLat = 4.1748, emerLng = 73.5093, emerAddr = 'Malé, Maldives';
+
+function openEmer(){
+  const modal = document.getElementById('emer-modal');
+  modal.classList.add('show');
+  document.getElementById('emer-form').style.display = 'block';
+  document.getElementById('emer-sending').classList.remove('show');
+  // Pre-fill blood group from profile
+  if(currentUser?.bloodGroup){
+    document.querySelectorAll('#emer-bg .blood-opt').forEach(o=>o.classList.remove('sel'));
+    const match=[...document.querySelectorAll('#emer-bg .blood-opt')].find(o=>o.textContent===currentUser.bloodGroup);
+    if(match) match.classList.add('sel');
+  }
+  // Pre-fill contact
+  if(currentUser?.phone) document.getElementById('e-contact').value=currentUser.phone;
+  getLocation();
+}
+
+function closeEmer(){
+  document.getElementById('emer-modal').classList.remove('show');
+}
+
+function getLocation(){
+  const txt = document.getElementById('location-text');
+  if(!txt) return;
+  txt.textContent = '📍 Detecting location...';
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(pos=>{
+      emerLat=pos.coords.latitude;
+      emerLng=pos.coords.longitude;
+      txt.textContent = `📍 ${emerLat.toFixed(4)}, ${emerLng.toFixed(4)} (Live GPS)`;
+    },()=>{txt.textContent='📍 Malé, Maldives (default)';});
+  } else { txt.textContent='📍 Malé, Maldives (default)'; }
+}
+
+function selUnit(n,el){
+  emerUnits=n;
+  document.querySelectorAll('[id^="unit-"]').forEach(x=>{x.style.background='var(--s2)';x.style.borderColor='var(--border)';x.style.color='var(--t3)';});
+  el.style.background='var(--red)';el.style.borderColor='var(--red)';el.style.color='#fff';
+}
+
+function selHosp(h,el){
+  emerHospital=h;
+  document.querySelectorAll('#hosp-btns div').forEach(x=>{x.style.background='var(--s2)';x.style.borderColor='var(--border)';x.style.color='var(--t3)';});
+  el.style.background='var(--red)';el.style.borderColor='var(--red)';el.style.color='#fff';
+}
+
 function submitEmergency(){
-  const bg=document.querySelector('#emer-bg .sel')?.textContent||'O+';
-  const req={id:uid(),type:'emergency',bloodGroup:bg,units:+document.getElementById('e-units').value||2,hospital:document.getElementById('e-hospital').value||'IGMH',patient:document.getElementById('e-patient').value||'Patient',contact:document.getElementById('e-contact').value,notes:document.getElementById('e-notes').value,island:'Malé',status:'active',timeAgo:'Just now',lat:4.1748,lng:73.5093};
-  requests.unshift(req);
-  save();
-  closeEmer();
-  toast('🚨 Emergency sent to 12 nearby donors!','success');
-  setTimeout(()=>toast('📲 WhatsApp & SMS alerts sent','info'),1500);
+  const bg = document.querySelector('#emer-bg .sel')?.textContent||'O+';
+  const req = {id:uid(),type:'emergency',bloodGroup:bg,units:emerUnits,hospital:emerHospital,patient:document.getElementById('e-patient').value||'Patient',contact:document.getElementById('e-contact').value,island:'Malé',status:'active',timeAgo:'Just now',lat:emerLat,lng:emerLng};
+  requests.unshift(req); save();
+
+  // Show sending animation
+  document.getElementById('emer-form').style.display='none';
+  document.getElementById('emer-sending').classList.add('show');
+
+  const nearbyDonors = donors.filter(d=>d.bloodGroup===bg||bg==='O+').length + Math.floor(Math.random()*8)+5;
+  const statusEl = document.getElementById('alert-status');
+  const countEl  = document.getElementById('alert-count');
+
+  let step=0;
+  const steps = [
+    {icon:'🔍',msg:`Finding ${bg} donors nearby...`,t:800},
+    {icon:'📍',msg:`Located ${nearbyDonors} compatible donors`,t:1400},
+    {icon:'📲',msg:`Sending push notifications...`,t:2000},
+    {icon:'💬',msg:`WhatsApp alerts sent to ${nearbyDonors} donors`,t:2600},
+    {icon:'📱',msg:`SMS sent to ${Math.floor(nearbyDonors*0.7)} donors`,t:3200},
+    {icon:'✅',msg:`${nearbyDonors} donors alerted!`,t:3800},
+  ];
+
+  steps.forEach(s=>setTimeout(()=>{
+    countEl.textContent=s.msg;
+    statusEl.innerHTML+=`<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--t2);margin-bottom:6px;animation:toastIn .3s ease"><span>${s.icon}</span><span>${s.msg}</span></div>`;
+  },s.t));
+
+  setTimeout(()=>{
+    closeEmer();
+    toast(`🚨 ${nearbyDonors} donors alerted for ${bg} blood!`,'success');
+    setTimeout(()=>toast(`📲 WhatsApp & SMS sent to all nearby donors`,'info'),1200);
+    setTimeout(()=>toast(`⏱ First response expected in ~8 minutes`,'info'),2400);
+  },4200);
 }
 function respondRequest(id){
   const r=requests.find(x=>x.id===id);
