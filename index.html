@@ -431,7 +431,7 @@ body.offline #offline-banner{display:block}
       <span class="tb-title">BLOODBRIDGE</span>
     </div>
     <div class="tb-right">
-      <button onclick="setLang(currentLang==='en'?'dv':'en')" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:10px;font-weight:700;color:var(--t2);cursor:pointer;font-family:inherit">🌐 ${currentLang==='en'?'DV':'EN'}</button>
+      <button id="lang-btn" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:10px;font-weight:700;color:var(--t2);cursor:pointer;font-family:inherit">🌐 ${currentLang==='en'?'DV':'EN'}</button>
       <button class="emer-btn" onclick="openEmer()" style="font-size:10px;padding:5px 10px">🚨 SOS</button>
       <div class="tb-btn" onclick="navigate('notifications')" title="Notifications">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"/></svg>
@@ -695,152 +695,178 @@ function setbn(k){
 
 // ===== HOME (DONOR) =====
 function renderHome(){
-  const u=currentUser||{name:'Guest',xp:0,donations:0,bloodGroup:'?',badges:[]};
-  const rank=getRank(u.xp);
-  const next=getNextRank(u.xp);
-  const prog=getRankProgress(u.xp);
-  const urgentReqs=requests.filter(r=>r.status==='active'&&r.type==='emergency').slice(0,2);
-  const lastDonation=donations.filter(d=>d.donorId===u.id).sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
-  const nextEligible=lastDonation?new Date(new Date(lastDonation.date).getTime()+90*864e5):null;
+  const u=currentUser||{name:'Guest',xp:0,donations:0,bloodGroup:'O+',badges:[],island:''};
+  const rank=getRank(u.xp||0);
+  const next=getNextRank(u.xp||0);
+  const prog=getRankProgress(u.xp||0);
+  const urgentReqs=requests.filter(r=>r.status==='active'&&r.type==='emergency').slice(0,3);
+  const lastDon=donations.filter(d=>d.donorId===u.id).sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
+  const nextEligible=lastDon?new Date(new Date(lastDon.date).getTime()+90*864e5):null;
   const eligible=!nextEligible||new Date()>nextEligible;
+  const livesSaved=Math.floor((u.donations||0)*2.7);
+  const score=getDonorScore(u);
+  const streak=getDonationStreak(u);
+  const hour=new Date().getHours();
+  const greeting=hour<5?'Good night':hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
+
+  // All features for navigation grid
+  const allFeatures=[
+    {icon:'🚨',label:'Emergency',page:'emergency-hub',color:'#EF4444',urgent:urgentReqs.length>0},
+    {icon:'🗺️',label:'Live Map',page:'global-map',color:'#2196F3'},
+    {icon:'🌍',label:'Intl Search',page:'intl-search',color:'#10B981'},
+    {icon:'🤖',label:'AI Hub',page:'ai-hub',color:'#6366F1'},
+    {icon:'🪪',label:'My Passport',page:'donor-passport',color:'#E53935'},
+    {icon:'💳',label:'My Card',page:'premium-card',color:'#D4AF37'},
+    {icon:'🏅',label:'Badges',page:'badges',color:'#F59E0B'},
+    {icon:'🏆',label:'Rankings',page:'leaderboard',color:'#9333EA'},
+    {icon:'🩸',label:'Rare Blood',page:'rare-registry',color:'#BE123C'},
+    {icon:'📋',label:'Missions',page:'missions',color:'#EC4899'},
+    {icon:'🎮',label:'Gamification',page:'gamification',color:'#7C3AED'},
+    {icon:'📅',label:'Appointments',page:'appointments',color:'#06B6D4'},
+    {icon:'💬',label:'Forums',page:'forums',color:'#1565C0'},
+    {icon:'🌐',label:'Community',page:'community',color:'#2E7D32'},
+    {icon:'🏥',label:'Hospitals',page:'blood-directory',color:'#0D9488'},
+    {icon:'🌍',label:'Global Registry',page:'global-registry',color:'#4338CA'},
+    {icon:'✅',label:'Verify',page:'verify',color:'#15803D'},
+    {icon:'📢',label:'Campaigns',page:'campaigns',color:'#B45309'},
+    {icon:'🏢',label:'Corporate',page:'corporate',color:'#1D4ED8'},
+    {icon:'🎓',label:'University',page:'university',color:'#7C3AED'},
+    {icon:'🙋',label:'Volunteer',page:'volunteer',color:'#EA580C'},
+    {icon:'🤝',label:'NGO Portal',page:'ngo-dash',color:'#065F46'},
+    {icon:'🏛️',label:'Museum',page:'museum',color:'#78350F'},
+    {icon:'🌳',label:'Family Tree',page:'family-tree',color:'#166534'},
+    {icon:'🎴',label:'Hero Cards',page:'trading-cards',color:'#4C1D95'},
+    {icon:'🏝️',label:'Island Champ',page:'island-championship',color:'#0C4A6E'},
+    {icon:'🇲🇻',label:'Maldives',page:'maldives',color:'#004D40'},
+    {icon:'🇲🇻',label:'MV Awards',page:'mv-awards',color:'#064E3B'},
+    {icon:'🌍',label:'Country Battle',page:'country-challenge',color:'#7F1D1D'},
+    {icon:'💰',label:'Wallet',page:'wallet',color:'#92400E'},
+    {icon:'💊',label:'Health',page:'health-dash',color:'#166534'},
+    {icon:'⭐',label:'Hospital Ratings',page:'hospital-ratings',color:'#B45309'},
+    {icon:'📊',label:'Polls',page:'polls',color:'#1D4ED8'},
+    {icon:'🎂',label:'Birthdays',page:'birthdays',color:'#9333EA'},
+    {icon:'🔬',label:'Simulator',page:'simulator',color:'#BE123C'},
+    {icon:'🏅',label:'NFT Certs',page:'nft-certs',color:'#4338CA'},
+    {icon:'👥',label:'Friends',page:'friends',color:'#1565C0'},
+    {icon:'🎨',label:'My Avatar',page:'avatar',color:'#EC4899'},
+    {icon:'🏥',label:'Hospital Dash',page:'hospital-dash',color:'#0369A1'},
+    {icon:'🩸',label:'Blood Bank',page:'blood-bank',color:'#B91C1C'},
+    {icon:'🔮',label:'Future',page:'future',color:'#4C1D95'},
+    {icon:'⭐',label:'Unique',page:'unique-features',color:'#B45309'},
+    {icon:'⚡',label:'Advanced',page:'advanced',color:'#6D28D9'},
+    {icon:'🌍',label:'Intl Network',page:'intl-network',color:'#1E3A5F'},
+    {icon:'📊',label:'Analytics',page:'global-analytics',color:'#0F766E'},
+    {icon:'🏆',label:'World Ranks',page:'world-rankings',color:'#7C2D12'},
+    {icon:'🏆',label:'Rank Cards',page:'rank-cards',color:'#92400E'},
+    {icon:'🌟',label:'Vision',page:'vision',color:'#1D4ED8'},
+    {icon:'📖',label:'History',page:'history',color:'#374151'},
+    {icon:'⚙️',label:'Settings',page:'settings',color:'#374151'},
+  ];
 
   return `
-  <div class="rank-card">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start">
-      <div>
-        <span class="rank-emoji">${rank.emoji}</span>
-        <div class="rank-name">${rank.name}</div>
-        <div class="rank-sub">Welcome back, ${u.name.split(' ')[0]}! 👋</div>
-        ${u.bloodGroup?`<div style="margin-top:8px"><span class="bg-badge" style="font-size:12px;width:36px;height:36px">${u.bloodGroup}</span></div>`:''}
+  <style>
+    .fs-hero{background:linear-gradient(135deg,#8B0000 0%,#DC143C 40%,#FF4560 70%,#8B0000 100%);border-radius:24px;padding:0;margin-bottom:14px;overflow:hidden;position:relative;box-shadow:0 12px 40px rgba(220,20,60,.35)}
+    .fs-hero-bg{position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+    .fs-feat-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px 8px;text-align:center;cursor:pointer;transition:all .2s;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;gap:6px}
+    .fs-feat-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.1)}
+    .fs-feat-icon{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;margin:0 auto}
+    .fs-feat-label{font-size:10px;font-weight:700;color:var(--t);letter-spacing:.02em}
+    .urgent-pulse{animation:pulse-emer 1.5s infinite}
+    .hero-stat{text-align:center;flex:1}
+    .hero-stat-val{font-size:22px;font-weight:900;color:#fff}
+    .hero-stat-lbl{font-size:8px;font-weight:700;opacity:.7;text-transform:uppercase;letter-spacing:.08em}
+  </style>
+
+  <!-- HERO SECTION -->
+  <div class="fs-hero">
+    <div class="fs-hero-bg"></div>
+    <div style="position:relative;padding:20px">
+      <!-- TOP ROW -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);font-weight:600">${greeting} 👋</div>
+          <div style="font-size:20px;font-weight:900;color:#fff;letter-spacing:-.3px">${u.name.split(' ')[0]}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.8);margin-top:2px">${rank.emoji} ${rank.name} · ${u.bloodGroup} · ${u.island||'Maldives'}</div>
+        </div>
+        <div style="text-align:right">
+          <button class="emer-btn urgent-pulse" onclick="openEmer()" style="font-size:11px;padding:8px 16px;border-radius:20px">🆘 SOS</button>
+        </div>
       </div>
-      <div style="text-align:right">
-        <div style="font-size:28px;font-weight:900;color:var(--red)">${u.xp}</div>
-        <div style="font-size:10px;color:var(--t3)">XP POINTS</div>
-        <div style="font-size:11px;color:var(--t2);margin-top:4px;font-weight:700">${u.donations} donations</div>
+
+      <!-- XP BAR -->
+      <div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:rgba(255,255,255,.7);margin-bottom:4px">
+          <span>${rank.emoji} ${rank.name}</span>
+          <span>${u.xp||0} XP ${next?'→ '+next.name+' '+next.emoji:''}</span>
+        </div>
+        <div style="height:5px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${prog}%;background:#fff;border-radius:3px"></div>
+        </div>
       </div>
-    </div>
-    <div class="xp-bar"><div class="xp-fill" style="width:${prog}%"></div></div>
-    <div class="xp-label">
-      <span>${rank.name} ${rank.emoji}</span>
-      ${next?`<span>${u.xp}/${next.min} XP → ${next.name} ${next.emoji}</span>`:`<span>🏆 Max Rank Achieved!</span>`}
+
+      <!-- STATS ROW -->
+      <div style="display:flex;gap:0;background:rgba(0,0,0,.2);border-radius:14px;padding:12px 8px">
+        <div class="hero-stat"><div class="hero-stat-val">${u.donations||0}</div><div class="hero-stat-lbl">Donations</div></div>
+        <div style="width:1px;background:rgba(255,255,255,.15)"></div>
+        <div class="hero-stat"><div class="hero-stat-val">${livesSaved}</div><div class="hero-stat-lbl">Lives Saved</div></div>
+        <div style="width:1px;background:rgba(255,255,255,.15)"></div>
+        <div class="hero-stat"><div class="hero-stat-val">${u.xp||0}</div><div class="hero-stat-lbl">XP Points</div></div>
+        <div style="width:1px;background:rgba(255,255,255,.15)"></div>
+        <div class="hero-stat"><div class="hero-stat-val">${streak||0}🔥</div><div class="hero-stat-lbl">Streak</div></div>
+      </div>
     </div>
   </div>
 
-  ${!eligible?`<div class="card" style="border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.05)">
-    <div style="display:flex;align-items:center;gap:10px">
-      <div style="font-size:24px">⏳</div>
-      <div>
-        <div style="font-weight:700;color:var(--gold)">Next Eligible: ${fmDate(nextEligible)}</div>
-        <div style="font-size:11px;color:var(--t3)">90-day waiting period after donation</div>
+  <!-- ELIGIBILITY + QUICK ACTION -->
+  <div class="g2" style="margin-bottom:12px">
+    <div style="background:#fff;border:1px solid ${eligible?'rgba(22,163,74,.3)':'rgba(245,158,11,.3)'};border-radius:14px;padding:14px;box-shadow:var(--shadow);text-align:center">
+      <div style="font-size:22px;margin-bottom:4px">${eligible?'✅':'⏳'}</div>
+      <div style="font-size:12px;font-weight:800;color:${eligible?'var(--green)':'var(--gold)'}">${eligible?'Eligible to Donate!':'Cooldown Active'}</div>
+      <div style="font-size:10px;color:var(--t3);margin-top:2px">${eligible?'You can donate today':'Next eligible: '+(nextEligible?nextEligible.toLocaleDateString():'—')}</div>
+      <button class="btn btn-red btn-sm" style="margin-top:8px;width:100%" onclick="navigate('donate-form')">${eligible?'🩸 Log Donation':'📅 Book Appointment'}</button>
+    </div>
+    <div style="background:linear-gradient(135deg,rgba(229,57,53,.08),rgba(183,28,28,.05));border:1px solid rgba(229,57,53,.2);border-radius:14px;padding:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;justify-content:space-between">
+      <div style="font-size:11px;font-weight:700;color:var(--red);margin-bottom:6px">🚨 ${urgentReqs.length||0} Active Emergency${urgentReqs.length!==1?'s':''}</div>
+      ${urgentReqs.length?urgentReqs.slice(0,2).map(r=>`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(229,57,53,.1)"><div style="background:var(--red);color:#fff;font-size:9px;font-weight:900;padding:1px 6px;border-radius:6px">${r.bloodGroup}</div><div style="font-size:10px;color:var(--t2);flex:1">${r.hospital||'Hospital'}</div><button style="background:var(--red);color:#fff;border:none;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit" onclick="respondRequest('${r.id}')">Help</button></div>`).join(''):`<div style="font-size:11px;color:var(--green);text-align:center;padding:8px 0">✅ All clear — no emergencies</div>`}
+      <button class="btn btn-outline btn-sm" style="margin-top:8px;width:100%;border-color:var(--red);color:var(--red)" onclick="openEmer()">Send Emergency Request</button>
+    </div>
+  </div>
+
+  <!-- ALL FEATURES GRID -->
+  <div style="margin-bottom:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:14px;font-weight:800;color:var(--t)">All Features</div>
+      <div style="font-size:10px;color:var(--t3)">${allFeatures.length} features</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+      ${allFeatures.map(f=>`
+      <div class="fs-feat-card" onclick="navigate('${f.page}');setbn('')" style="${f.urgent?'border-color:rgba(229,57,53,.4);background:rgba(229,57,53,.04)':''}">
+        <div class="fs-feat-icon" style="background:${f.color}15;${f.urgent?'animation:pulse-emer 1.5s infinite':''}">
+          <span>${f.icon}</span>
+          ${f.urgent?'<span style="position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid #fff"></span>':''}
+        </div>
+        <div class="fs-feat-label">${f.label}</div>
+      </div>`).join('')}
+    </div>
+  </div>
+
+  <!-- COMMUNITY FEED PREVIEW -->
+  <div style="margin-bottom:4px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:14px;font-weight:800;color:var(--t)">🌍 Community</div>
+      <button class="sec-link" onclick="navigate('community')">See All</button>
+    </div>
+    ${feed.slice(0,2).map(f=>`
+    <div class="feed-card">
+      <div class="feed-header">
+        <div class="feed-av">${f.av}</div>
+        <div style="flex:1"><div class="feed-name">${f.user}</div><div class="feed-time">${f.time}</div></div>
+        ${f.bloodGroup?`<span class="bg-badge" style="margin-left:auto;width:32px;height:32px;font-size:10px;border-radius:8px">${f.bloodGroup}</span>`:''}
       </div>
-    </div>
-  </div>`:`<button class="btn btn-red" onclick="navigate('donate-form')" style="margin-bottom:12px">🩸 Log a Donation</button>`}
-
-  <div class="stat-grid">
-    <div class="stat-card">
-      <div class="stat-icon" style="background:rgba(220,20,60,.15)">🩸</div>
-      <div class="stat-val">${u.donations}</div>
-      <div class="stat-lbl">Total Donations</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon" style="background:rgba(245,158,11,.15)">⚡</div>
-      <div class="stat-val">${u.xp}</div>
-      <div class="stat-lbl">XP Earned</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon" style="background:rgba(16,185,129,.15)">🏅</div>
-      <div class="stat-val">${u.badges?.length||0}</div>
-      <div class="stat-lbl">Badges</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon" style="background:rgba(139,92,246,.15)">👥</div>
-      <div class="stat-val">${Math.floor(u.donations*2.7)}</div>
-      <div class="stat-lbl">Lives Saved</div>
-    </div>
-  </div>
-
-  ${urgentReqs.length?`
-  <div class="sec-hdr"><div class="sec-title">🚨 Urgent Requests Nearby</div><button class="sec-link" onclick="navigate('requests');setbn('requests')">See All</button></div>
-  ${urgentReqs.map(r=>`
-  <div class="req-card urgent">
-    <div class="bg-badge">${r.bloodGroup}</div>
-    <div class="req-info">
-      <div class="req-title">${r.units} units needed · ${r.hospital}</div>
-      <div class="req-meta">${r.island||'Malé'} · ${r.timeAgo||'Just now'}</div>
-    </div>
-    <button class="req-action" onclick="respondRequest('${r.id}')">Respond</button>
-  </div>`).join('')}`:''}
-
-  <div class="sec-hdr" style="margin-top:4px"><div class="sec-title">Quick Actions</div></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-    <button class="btn btn-outline btn-sm" style="width:100%;padding:14px" onclick="openEmer()">🚨 Emergency</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('map');setbn('map')">🗺️ Donor Map</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('appointments')">📅 Book Appt</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('ai')">🤖 AI Helper</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1;border-color:rgba(183,28,28,.3);color:#B71C1C" onclick="navigate('rare-registry');setbn('')">🩸 Rare Blood Registry</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('donor-passport');setbn('')">🪪 Donor Passport</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('intl-search');setbn('')">🌍 Intl. Donor Search</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('global-analytics');setbn('')">📊 Global Analytics</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('rare-management');setbn('')">🔬 Rare Blood Mgmt</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('ai-matching');setbn('')">🤖 AI Emergency Matching</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('global-map');setbn('map')">🗺️ Global Map</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1;border-color:rgba(229,57,53,.3);color:var(--red)" onclick="navigate('donor-track');setbn('')">🚗 Track Live Donor</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('blood-directory');setbn('')">🏥 Blood Bank Directory</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('global-registry');setbn('')">🌍 Global Donor Registry</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('verify');setbn('')">✅ Donor Verification</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('campaigns');setbn('')">📢 Campaigns</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('vision');setbn('')">🌟 Our Vision</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1;background:linear-gradient(135deg,rgba(124,58,237,.08),rgba(37,99,235,.05));border-color:rgba(124,58,237,.3);color:var(--purple)" onclick="navigate('advanced');setbn('')">⚡ Advanced Features</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('rank-cards');setbn('')">🏆 Rank Cards</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('intl-network');setbn('')">🌐 International Network</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('hospital-dash');setbn('')">🏥 Hospital Dashboard</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('blood-bank');setbn('')">🩸 Blood Bank</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('corporate');setbn('')">🏢 Corporate Program</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('university');setbn('')">🎓 University Program</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('social');setbn('')">👥 Social</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('premium-card');setbn('')">💳 My Donor Card</button>
-    <button class="btn btn-gold btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('badges');setbn('')">🏅 My Badges</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1;background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(16,185,129,.05));border-color:rgba(99,102,241,.3);color:#6366F1" onclick="navigate('ai-hub');setbn('')">🤖 AI Intelligence Hub</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('maldives');setbn('')">🇲🇻 Maldives Hub</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('country-challenge');setbn('')">🌍 Country Challenge</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('health-dash');setbn('')">💊 Health Dashboard</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('gamification');setbn('')">🎮 Gamification</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('missions');setbn('')">📋 Daily Missions</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('island-championship');setbn('')">🏝️ Island Championship</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('trading-cards');setbn('')">🎴 Blood Hero Cards</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1;background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(124,58,237,.05));border-color:rgba(212,175,55,.3);color:var(--gold)" onclick="navigate('unique-features');setbn('')">⭐ Unique Features</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('nft-certs');setbn('')">🏅 NFT Certificates</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('museum');setbn('')">🏛️ Donation Museum</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('family-tree');setbn('')">🌳 Donor Family Tree</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('avatar');setbn('')">🎨 My Avatar</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('friends');setbn('')">👥 Friends & Follow</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('polls');setbn('')">📊 Community Polls</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('birthdays');setbn('')">🎂 Birthdays</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('simulator');setbn('')">🔬 Shortage Simulator</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1;background:linear-gradient(135deg,rgba(0,77,64,.08),rgba(38,166,154,.05));border-color:rgba(0,77,64,.3);color:#004D40" onclick="navigate('mv-awards');setbn('')">🇲🇻 Maldives Blood Hero Awards</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('emergency-hub');setbn('')">🚨 Emergency Hub</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('community');setbn('')">🌍 Community Hub</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('world-rankings');setbn('')">🏆 World Rankings</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('ngo-dash');setbn('')">🤝 NGO Dashboard</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('volunteer');setbn('')">🙋 Volunteer</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1;border-color:rgba(124,58,237,.3);color:var(--purple)" onclick="navigate('future');setbn('')">🔮 Future Features</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('wallet');setbn('')">💰 Donation Wallet</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('hospital-ratings');setbn('')">⭐ Hospital Ratings</button>
-    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('forums');setbn('')">💬 Donor Forums</button>
-  </div>
-
-  <div class="sec-hdr"><div class="sec-title">🌟 Community</div><button class="sec-link" onclick="navigate('community')">See All</button></div>
-  ${feed.slice(0,2).map(f=>`
-  <div class="feed-card">
-    <div class="feed-header">
-      <div class="feed-av">${f.av}</div>
-      <div><div class="feed-name">${f.user}</div><div class="feed-time">${f.time}</div></div>
-      ${f.bloodGroup?`<span class="bg-badge" style="margin-left:auto;width:32px;height:32px;font-size:10px">${f.bloodGroup}</span>`:''}
-    </div>
-    <div class="feed-text">${f.text}</div>
-  </div>`).join('')}`;
+      <div class="feed-text">${f.text}</div>
+    </div>`).join('')}
+  </div>`;
 }
-
 // ===== MAP =====
 function renderMap(){
   return `
@@ -5194,6 +5220,9 @@ setTimeout(()=>{
       }
     }
   });
+  // Language button
+  var langBtn = document.getElementById('lang-btn');
+  if(langBtn) langBtn.addEventListener('click', function(){setLang(currentLang==='en'?'dv':'en');});
   // AI page listeners
   document.addEventListener('click', function(e) {
     if(e.target.id==='chat-send-btn'||e.target.closest('#chat-send-btn')) sendChat();
