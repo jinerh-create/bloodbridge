@@ -645,7 +645,9 @@ function navigate(p){
     'intl-search':renderIntlSearch, 'rare-management':renderRareManagement,
     'donor-passport':renderDonorPassport, 'global-analytics':renderGlobalAnalytics,
     'ai-matching':renderAIMatchingPage, 'global-map':renderGlobalMap,
-    'donor-track':renderDonorTrack, 'blood-directory':renderBloodDirectory
+    'donor-track':renderDonorTrack, 'blood-directory':renderBloodDirectory,
+    'global-registry':renderGlobalRegistry, 'vision':renderVision,
+    'verify':renderVerification, 'campaigns':renderCampaigns
   };
   const fn=renders[p];
   document.getElementById('page').innerHTML=fn?fn():'<div class="empty"><div class="empty-icon">🔍</div><div>Page not found</div></div>';
@@ -763,6 +765,10 @@ function renderHome(){
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('global-map');setbn('map')">🗺️ Global Map</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1;border-color:rgba(229,57,53,.3);color:var(--red)" onclick="navigate('donor-track');setbn('')">🚗 Track Live Donor</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('blood-directory');setbn('')">🏥 Blood Bank Directory</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('global-registry');setbn('')">🌍 Global Donor Registry</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('verify');setbn('')">✅ Donor Verification</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('campaigns');setbn('')">📢 Campaigns</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('vision');setbn('')">🌟 Our Vision</button>
   </div>
 
   <div class="sec-hdr"><div class="sec-title">🌟 Community</div><button class="sec-link" onclick="navigate('community')">See All</button></div>
@@ -2788,6 +2794,268 @@ function renderBloodDirectory() {
     <div style="font-size:11px;color:var(--t3);margin-bottom:10px">Help us expand the directory by adding missing facilities</div>
     <button class="btn btn-red btn-sm" onclick="toast('Thank you! Our team will verify and add it shortly.','success')">+ Add Facility</button>
   </div>`;
+}
+
+// ===== GLOBAL DONOR REGISTRY =====
+const GLOBAL_DONORS = [
+  {id:'g1',name:'Ahmed Ali',country:'MV',city:'Malé',blood:'O+',available:true,donations:18,verified:true,joined:'2024'},
+  {id:'g2',name:'Fatima Hassan',country:'MV',city:'Addu City',blood:'O-',available:true,donations:12,verified:true,joined:'2024'},
+  {id:'g3',name:'Ibrahim Rasheed',country:'MV',city:'Kulhudhuffushi',blood:'A+',available:false,donations:8,verified:true,joined:'2023'},
+  {id:'g4',name:'Rahul Kumar',country:'IN',city:'Mumbai',blood:'B+',available:true,donations:15,verified:true,joined:'2023'},
+  {id:'g5',name:'Priya Singh',country:'IN',city:'Delhi',blood:'AB-',available:true,donations:6,verified:false,joined:'2025'},
+  {id:'g6',name:'Nimal Perera',country:'LK',city:'Colombo',blood:'O+',available:true,donations:9,verified:true,joined:'2024'},
+  {id:'g7',name:'Sara Johnson',country:'GB',city:'London',blood:'B-',available:false,donations:22,verified:true,joined:'2022'},
+  {id:'g8',name:'Omar Al-Rashidi',country:'AE',city:'Dubai',blood:'A+',available:true,donations:11,verified:true,joined:'2023'},
+  {id:'g9',name:'Karim Hassan',country:'SA',city:'Riyadh',blood:'AB+',available:true,donations:7,verified:false,joined:'2025'},
+  {id:'g10',name:'Wei Zhang',country:'SG',city:'Singapore',blood:'O+',available:true,donations:14,verified:true,joined:'2023'},
+  {id:'g11',name:'Maria Garcia',country:'US',city:'New York',blood:'A-',available:false,donations:19,verified:true,joined:'2022'},
+  {id:'g12',name:'James Smith',country:'AU',city:'Sydney',blood:'O-',available:true,donations:25,verified:true,joined:'2021'},
+  {id:'g13',name:'Tariq Khan',country:'PK',city:'Karachi',blood:'B+',available:true,donations:5,verified:false,joined:'2025'},
+  {id:'g14',name:'Asha Begum',country:'BD',city:'Dhaka',blood:'A+',available:true,donations:10,verified:true,joined:'2024'},
+  {id:'g15',name:'Ali Hassan',country:'MV',city:'Malé',blood:'O-',available:true,donations:30,verified:true,joined:'2020'},
+];
+let grBlood='',grCountry='',grVerified='',grSearch='';
+
+function renderGlobalRegistry() {
+  let list = [...GLOBAL_DONORS,...donors.map(d=>({...d,country:d.country||'MV',city:d.island||'Maldives',blood:d.bloodGroup,available:true,verified:false,joined:new Date(d.joinDate||Date.now()).getFullYear()}))]
+    .filter(d=>
+      (!grBlood||d.blood===grBlood||d.bloodGroup===grBlood)&&
+      (!grCountry||d.country===grCountry)&&
+      (!grVerified||d.verified)&&
+      (!grSearch||(d.name||'').toLowerCase().includes(grSearch.toLowerCase())||(d.city||'').toLowerCase().includes(grSearch.toLowerCase()))
+    );
+
+  const totalCountries=[...new Set([...GLOBAL_DONORS,...donors].map(d=>d.country||'MV'))].length;
+
+  return `
+  <div style="background:linear-gradient(135deg,var(--red),var(--reddark));border-radius:20px;padding:18px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden">
+    <div style="position:absolute;right:-10px;top:-10px;font-size:80px;opacity:.1">🌍</div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">BLOODBRIDGE GLOBAL</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">Global Donor Registry</div>
+    <div style="font-size:11px;opacity:.85">Worldwide verified blood donors ready to save lives</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2);text-align:center">
+      <div><div style="font-size:20px;font-weight:900">${GLOBAL_DONORS.length+donors.length}</div><div style="font-size:9px;opacity:.7">Total Donors</div></div>
+      <div style="border-left:1px solid rgba(255,255,255,.2);border-right:1px solid rgba(255,255,255,.2)"><div style="font-size:20px;font-weight:900">${totalCountries}</div><div style="font-size:9px;opacity:.7">Countries</div></div>
+      <div><div style="font-size:20px;font-weight:900">${GLOBAL_DONORS.filter(d=>d.available).length}</div><div style="font-size:9px;opacity:.7">Available Now</div></div>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="form-group" style="margin-bottom:8px">
+      <input id="gr-search" placeholder="🔍 Search by name or city..." value="${grSearch}" oninput="grSearch=this.value;navigate('global-registry')">
+    </div>
+    <div class="fr" style="grid-template-columns:1fr 1fr;margin-bottom:8px">
+      <div>
+        <label>Blood Group</label>
+        <select id="gr-blood" onchange="grBlood=this.value;navigate('global-registry')">
+          <option value="">All Groups</option>
+          ${['O+','O-','A+','A-','B+','B-','AB+','AB-'].map(b=>`<option value="${b}" ${grBlood===b?'selected':''}>${b}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label>Country</label>
+        <select id="gr-country" onchange="grCountry=this.value;navigate('global-registry')">
+          <option value="">🌍 All Countries</option>
+          ${[...new Set(GLOBAL_DONORS.map(d=>d.country))].map(c=>{const info=getCountry(c);return `<option value="${c}" ${grCountry===c?'selected':''}>${info.flag} ${info.name}</option>`;}).join('')}
+        </select>
+      </div>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--t);font-weight:600;text-transform:none;letter-spacing:0">
+      <input type="checkbox" id="gr-verified" ${grVerified?'checked':''} onchange="grVerified=this.checked;navigate('global-registry')" style="width:auto"> ✓ Verified donors only
+    </label>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <div style="font-size:13px;font-weight:700;color:var(--t)">${list.length} donors found</div>
+    <button class="btn btn-red btn-sm" onclick="navigate('rare-registry')">🩸 Rare Blood Only</button>
+  </div>
+
+  ${list.map(d=>{
+    const c=getCountry(d.country||'MV');
+    const rank=getRank((d.xp||0)+(d.donations||0)*100);
+    return `<div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)">
+      <div style="width:46px;height:46px;border-radius:50%;background:rgba(229,57,53,.1);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:var(--red);flex-shrink:0;border:2px solid rgba(229,57,53,.2)">${d.blood||d.bloodGroup||'?'}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:2px">
+          <span style="font-size:13px;font-weight:700;color:var(--t)">${d.name}</span>
+          ${d.verified?'<span style="font-size:9px;background:#E8F5E9;color:#2E7D32;padding:1px 6px;border-radius:8px;font-weight:700">✓ Verified</span>':''}
+          <span style="font-size:14px">${c.flag}</span>
+        </div>
+        <div style="font-size:10px;color:var(--t3)">📍 ${d.city}, ${c.name} · ${d.donations||0} donations · Since ${d.joined||2024}</div>
+        <div style="font-size:10px;color:var(--t3);margin-top:2px">${rank.emoji} ${rank.name}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:9px;font-weight:700;padding:3px 8px;border-radius:10px;background:${d.available?'#E8F5E9':'#FFF3E0'};color:${d.available?'#2E7D32':'#E65100'};margin-bottom:6px">${d.available?'✓ Available':'⏳ Cooldown'}</div>
+        ${d.available?`<button style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit" onclick="toast('Request sent to ${d.name}!','success')">Request</button>`:''}
+      </div>
+    </div>`;
+  }).join('')}
+  ${!list.length?`<div class="empty"><div class="empty-icon">🌍</div><div>No donors found with these filters</div></div>`:''}`;
+}
+
+// ===== VISION PAGE =====
+function renderVision() {
+  const countries = ['🇲🇻 Maldives','🇮🇳 India','🇱🇰 Sri Lanka','🇵🇰 Pakistan','🇧🇩 Bangladesh','🇬🇧 United Kingdom','🇦🇪 UAE','🇸🇦 Saudi Arabia','🇲🇾 Malaysia','🇸🇬 Singapore','🇦🇺 Australia','🇺🇸 United States','🇨🇦 Canada','🇩🇪 Germany','🇫🇷 France','🇳🇵 Nepal','🇲🇲 Myanmar','🇹🇭 Thailand','🇿🇦 South Africa','🇳🇬 Nigeria'];
+  return `
+  <!-- HERO -->
+  <div style="background:linear-gradient(160deg,#8B0000,#DC143C,#FF4560);border-radius:24px;padding:28px 20px;margin-bottom:16px;color:#fff;text-align:center;position:relative;overflow:hidden;box-shadow:0 12px 40px rgba(220,20,60,.4)">
+    <div style="position:absolute;inset:0;background:url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><circle cx=\"20\" cy=\"20\" r=\"40\" fill=\"rgba(255,255,255,.03)\"/><circle cx=\"80\" cy=\"80\" r=\"60\" fill=\"rgba(255,255,255,.03)\"/></svg>');background-size:cover"></div>
+    <div style="position:relative">
+      <div style="font-size:48px;margin-bottom:10px">🌍</div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:.15em;opacity:.8;margin-bottom:8px">OUR VISION</div>
+      <div style="font-size:22px;font-weight:900;line-height:1.3;margin-bottom:10px">"Connecting blood donors and patients worldwide in real-time."</div>
+      <div style="font-size:13px;opacity:.85;line-height:1.6">A person in India, Maldives, Nepal, UK, USA, Australia, or anywhere else can register as a donor, request blood, find nearby donors, join donation campaigns, earn recognition, and help save lives.</div>
+    </div>
+  </div>
+
+  <!-- GLOBAL REACH -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">🌍 Countries We Serve</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      ${countries.map(c=>`<div style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:var(--s2);border-radius:8px;font-size:12px;font-weight:600;color:var(--t)">${c}</div>`).join('')}
+    </div>
+    <div style="margin-top:8px;text-align:center;font-size:11px;color:var(--t3)">+ More countries being added every month</div>
+  </div>
+
+  <!-- WHAT YOU CAN DO -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">💪 What Anyone Can Do</div>
+    ${[
+      ['🩸','Register as a Donor','Create your profile, add blood group, get verified and become part of the global network'],
+      ['🚨','Request Blood','Send emergency requests to nearby donors with one tap — responds in minutes'],
+      ['🔍','Find Nearby Donors','AI-powered matching finds the nearest, fastest, best-matched available donor'],
+      ['🏥','Find Blood Banks','Search our worldwide directory of hospitals and blood banks with contact info'],
+      ['📢','Join Campaigns','Participate in donation drives, camps, and community challenges worldwide'],
+      ['🏆','Earn Recognition','Collect badges, climb leaderboards, earn the Digu King title and champion coins'],
+      ['💰','Save Lives for Free','Every donation can save up to 3 lives. No cost. Maximum impact.'],
+      ['🌍','Go Global','Your donor passport is recognized in 28+ countries via the BloodBridge network'],
+    ].map(([e,t,d])=>`
+    <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="width:40px;height:40px;border-radius:12px;background:rgba(229,57,53,.1);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${e}</div>
+      <div><div style="font-size:13px;font-weight:700;color:var(--t);margin-bottom:2px">${t}</div><div style="font-size:11px;color:var(--t3);line-height:1.4">${d}</div></div>
+    </div>`).join('')}
+  </div>
+
+  <!-- STATS -->
+  <div class="g2" style="margin-bottom:12px">
+    <div class="stat-card" style="text-align:center"><div style="font-size:32px;font-weight:900;color:var(--red)">3</div><div class="sl">Lives per donation</div></div>
+    <div class="stat-card" style="text-align:center"><div style="font-size:32px;font-weight:900;color:var(--red)">8 min</div><div class="sl">Avg emergency response</div></div>
+    <div class="stat-card" style="text-align:center"><div style="font-size:32px;font-weight:900;color:var(--red)">28+</div><div class="sl">Countries served</div></div>
+    <div class="stat-card" style="text-align:center"><div style="font-size:32px;font-weight:900;color:var(--red)">24/7</div><div class="sl">Always available</div></div>
+  </div>
+
+  <!-- JOIN CTA -->
+  <div style="background:linear-gradient(135deg,var(--red),var(--reddark));border-radius:16px;padding:20px;text-align:center;color:#fff">
+    <div style="font-size:18px;font-weight:900;margin-bottom:6px">Join the Movement 🩸</div>
+    <div style="font-size:12px;opacity:.85;margin-bottom:14px">Register today and become part of the world's largest blood donation network</div>
+    <button style="background:#fff;color:var(--red);border:none;border-radius:20px;padding:12px 28px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit" onclick="doLogout()">Register as Donor</button>
+  </div>`;
+}
+
+// ===== DONOR VERIFICATION =====
+function renderVerification() {
+  const u = currentUser||{name:'Guest',id:'GUEST'};
+  const isVerified = u.id!=='GUEST';
+  return `
+  <div style="background:linear-gradient(135deg,#1565C0,#2196F3);border-radius:20px;padding:20px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">OFFICIAL</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">Donor Verification Center</div>
+    <div style="font-size:11px;opacity:.85">Get verified to appear in the global registry and build trust with hospitals</div>
+  </div>
+
+  <!-- CURRENT STATUS -->
+  <div class="card" style="margin-bottom:12px;border-left:4px solid ${isVerified?'#43A047':'#E53935'}">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="font-size:32px">${isVerified?'✅':'⏳'}</div>
+      <div>
+        <div style="font-size:14px;font-weight:800;color:var(--t)">${isVerified?'Account Verified':'Not Verified Yet'}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">${isVerified?'Your profile appears in the global registry with a ✓ badge':'Complete verification to get the verified badge'}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VERIFICATION STEPS -->
+  <div style="font-size:13px;font-weight:800;color:var(--t);margin-bottom:10px">Verification Steps</div>
+
+  ${[
+    {step:1,title:'Identity Verification',desc:'Upload your national ID or passport',status:'done',icon:'🪪'},
+    {step:2,title:'Blood Type Confirmation',desc:'Confirm your blood type at a certified lab',status:isVerified?'done':'pending',icon:'🩸'},
+    {step:3,title:'Medical Screening',desc:'Complete a basic health questionnaire',status:isVerified?'done':'pending',icon:'🩺'},
+    {step:4,title:'Phone Verification',desc:'Verify your mobile number',status:'done',icon:'📱'},
+    {step:5,title:'First Donation Proof',desc:'Submit your first donation certificate',status:isVerified&&(currentUser?.donations||0)>0?'done':'pending',icon:'🏅'},
+  ].map(s=>`
+  <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)">
+    <div style="width:40px;height:40px;border-radius:50%;background:${s.status==='done'?'#E8F5E9':'var(--s2)'};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:2px solid ${s.status==='done'?'#43A047':'var(--border)'}">${s.status==='done'?'✓':s.icon}</div>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:700;color:var(--t)">${s.step}. ${s.title}</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:1px">${s.desc}</div>
+    </div>
+    <div style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;background:${s.status==='done'?'#E8F5E9':'rgba(229,57,53,.1)'};color:${s.status==='done'?'#2E7D32':'var(--red)'}">${s.status==='done'?'✓ Done':'Pending'}</div>
+  </div>`).join('')}
+
+  <!-- UPLOAD SECTION -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">📤 Upload Documents</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${[['🪪','National ID / Passport'],['🩸','Blood Type Lab Report'],['🏅','Previous Donation Certificate']].map(([i,l])=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--s2);border-radius:10px">
+        <span style="font-size:20px">${i}</span>
+        <div style="flex:1;font-size:12px;font-weight:600;color:var(--t)">${l}</div>
+        <button class="btn btn-ghost btn-sm" onclick="toast('Document upload coming soon — contact support@bloodbridge.app','info')">Upload</button>
+      </div>`).join('')}
+    </div>
+  </div>
+
+  <!-- BENEFITS -->
+  <div class="card">
+    <div class="ct">⭐ Verification Benefits</div>
+    ${['✓ Verified badge on your profile','✓ Listed in Global Donor Registry','✓ Trusted by hospitals worldwide','✓ Priority matching in emergencies','✓ Eligible for campaign rewards','✓ Digital donor passport validity'].map(b=>`<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--t);font-weight:600">${b}</div>`).join('')}
+    <button class="btn btn-red" style="margin-top:12px" onclick="toast('Verification request submitted! Our team will contact you within 24 hours.','success')">🚀 Start Verification</button>
+  </div>`;
+}
+
+// ===== CAMPAIGNS =====
+function renderCampaigns() {
+  const campaigns = [
+    {id:'c1',title:'Ramadan Blood Drive 2026',org:'Red Crescent Maldives',goal:500,current:312,deadline:'Jun 20, 2026',country:'🇲🇻',type:'camp',urgent:false,desc:'Join our annual Ramadan blood donation campaign. Every unit collected this month is dedicated to patients in need.'},
+    {id:'c2',title:'Save 3 Lives Challenge',org:'BloodBridge Global',goal:1000,current:743,deadline:'Jun 30, 2026',country:'🌍',type:'challenge',urgent:false,desc:'Donate blood 3 times this year and earn the Champion badge + exclusive rewards.'},
+    {id:'c3',title:'Emergency O- Shortage Alert',org:'IGMH Malé',goal:50,current:12,deadline:'URGENT',country:'🇲🇻',type:'emergency',urgent:true,desc:'Critical shortage of O- blood at IGMH. O- donors urgently needed. Response in the next 24 hours saves lives.'},
+    {id:'c4',name:'Corporate Hero Drive 2026',org:'Maldives Business Council',goal:200,current:88,deadline:'Jul 15, 2026',country:'🇲🇻',type:'camp',urgent:false,desc:'Companies donating 10+ units get the Corporate Hero award and social recognition.'},
+    {id:'c5',title:'World Blood Donor Day 2026',org:'WHO x BloodBridge',goal:5000,current:2841,deadline:'Jun 14, 2026',country:'🌍',type:'event',urgent:false,desc:'Join millions worldwide on World Blood Donor Day. Register, donate, and share your story.'},
+  ];
+  return `
+  <div style="font-size:15px;font-weight:800;color:var(--t);margin-bottom:12px">📢 Campaigns & Events</div>
+  ${campaigns.map(c=>{
+    const pct=Math.min(100,Math.round((c.current/c.goal)*100));
+    return `<div style="background:#fff;border:1px solid ${c.urgent?'rgba(229,57,53,.4)':'var(--border)'};border-radius:16px;padding:16px;margin-bottom:10px;box-shadow:var(--shadow)${c.urgent?';border-left:4px solid var(--red)':''}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px">
+            ${c.urgent?'<span style="font-size:9px;background:rgba(229,57,53,.1);color:var(--red);padding:2px 8px;border-radius:10px;font-weight:800;animation:pulse-emer 1s infinite">🚨 URGENT</span>':''}
+            <span style="font-size:9px;background:var(--s2);color:var(--t3);padding:2px 8px;border-radius:10px;font-weight:700">${c.type?.toUpperCase()||'EVENT'}</span>
+            <span style="font-size:11px">${c.country}</span>
+          </div>
+          <div style="font-size:14px;font-weight:800;color:var(--t);margin-bottom:2px">${c.title||c.name}</div>
+          <div style="font-size:10px;color:var(--t3)">by ${c.org} · Ends: ${c.deadline}</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--t2);line-height:1.5;margin-bottom:10px">${c.desc}</div>
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--t3);margin-bottom:4px">
+          <span>${c.current.toLocaleString()} donations</span>
+          <span>${c.goal.toLocaleString()} goal · ${pct}%</span>
+        </div>
+        <div style="height:6px;background:var(--s3);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${c.urgent?'var(--red)':'linear-gradient(90deg,var(--red),#FF6B6B)'};border-radius:3px;transition:width .5s"></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button style="background:var(--red);color:#fff;border:none;border-radius:10px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit" onclick="toast('Joined ${c.title||c.name}! +25 XP earned 🎉','success')">Join Campaign</button>
+        <button style="background:var(--s2);color:var(--t);border:1px solid var(--border);border-radius:10px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit" onclick="if(navigator.share)navigator.share({title:'${c.title||c.name}',url:window.location.href});else toast('Link copied!','success')">Share 🔗</button>
+      </div>
+    </div>`;
+  }).join('')}`;
 }
 
 // ===== GLOBAL MAP =====
