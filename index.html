@@ -643,6 +643,15 @@ function navigate(p){
   document.getElementById('page').innerHTML=fn?fn():'<div class="empty"><div class="empty-icon">🔍</div><div>Page not found</div></div>';
   if(p==='map') setTimeout(initMap,100);
   if(p==='global-map') setTimeout(initGlobalMap,100);
+  if(p==='donor-passport') setTimeout(()=>{
+    const qrEl=document.getElementById('pp-qr');
+    const u=currentUser;
+    if(qrEl&&window.QRCode&&u){
+      qrEl.innerHTML='';
+      const intlNum=`BB-MV-${new Date().getFullYear()}-${(u.id||'').slice(0,6).toUpperCase()}`;
+      try{new QRCode(qrEl,{text:`BLOODBRIDGE:${intlNum}:${u.bloodGroup||'O+'}`,width:70,height:70,colorDark:'#8B0000',colorLight:'#ffffff'});}catch(e){}
+    }
+  },100);
   if(p==='home'&&currentUser?.role==='hospital') document.getElementById('page').innerHTML=renderHospital();
   if(p==='home'&&currentUser?.role==='admin') document.getElementById('page').innerHTML=renderAdmin();
   window.scrollTo(0,0);
@@ -1342,6 +1351,86 @@ function likeFeed(id,btn){
   btn.textContent='❤️ '+f.likes;
   save();
 }
+function downloadDonationCert(id, hospital, date, bg) {
+  if(!window.jspdf){toast('Loading...','i');return;}
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF();
+  const u=currentUser||{name:'Donor',bloodGroup:'O+',id:'GUEST'};
+  const intlNum=`BB-MV-${new Date().getFullYear()}-${(u.id||'').slice(0,6).toUpperCase()}`;
+  doc.setFillColor(139,0,0);doc.rect(0,0,210,25,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(14);doc.setFont(undefined,'bold');
+  doc.text('BLOODBRIDGE — BLOOD DONATION CERTIFICATE',105,16,{align:'center'});
+  doc.setTextColor(0,0,0);
+  doc.setFontSize(22);doc.setFont(undefined,'bold');
+  doc.text('Certificate of Blood Donation',105,45,{align:'center'});
+  doc.setFontSize(13);doc.setFont(undefined,'normal');
+  doc.text('This is to certify that',105,60,{align:'center'});
+  doc.setFontSize(20);doc.setFont(undefined,'bold');doc.setTextColor(139,0,0);
+  doc.text(u.name,105,75,{align:'center'});
+  doc.setTextColor(0,0,0);doc.setFontSize(13);doc.setFont(undefined,'normal');
+  doc.text('has voluntarily donated blood and contributed to saving lives.',105,88,{align:'center'});
+  doc.setFontSize(11);
+  doc.text(`Blood Group: ${bg||u.bloodGroup}`,60,105);
+  doc.text(`Hospital: ${hospital}`,60,115);
+  doc.text(`Date: ${new Date(date).toLocaleDateString()}`,60,125);
+  doc.text(`Donor ID: ${intlNum}`,60,135);
+  doc.setFontSize(10);doc.setTextColor(100,100,100);
+  doc.text('Every donation can save up to 3 lives. Thank you for being a hero.',105,155,{align:'center'});
+  doc.setFillColor(139,0,0);doc.rect(0,270,210,30,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(10);
+  doc.text('BLOODBRIDGE · Connecting Hearts · Saving Lives · bloodbridge.jinerh.workers.dev',105,282,{align:'center'});
+  doc.save(`donation-certificate-${new Date(date).getFullYear()}.pdf`);
+  toast('Certificate downloaded!','success');
+}
+
+function downloadPassportCert() {
+  if(!window.jspdf){toast('Loading...','i');return;}
+  const {jsPDF}=window.jspdf;
+  const u=currentUser||{name:'Donor',bloodGroup:'O+',id:'GUEST',donations:0,xp:0};
+  const rank=getRank(u.xp||0);
+  const intlNum=`BB-MV-${new Date().getFullYear()}-${(u.id||'').slice(0,6).toUpperCase()}`;
+  const doc=new jsPDF();
+  doc.setFillColor(139,0,0);doc.rect(0,0,210,25,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(14);doc.setFont(undefined,'bold');
+  doc.text('BLOODBRIDGE — OFFICIAL DONOR PASSPORT',105,16,{align:'center'});
+  doc.setTextColor(0,0,0);
+  doc.setFontSize(20);doc.setFont(undefined,'bold');
+  doc.text(u.name,105,42,{align:'center'});
+  doc.setFontSize(12);doc.setFont(undefined,'normal');doc.setTextColor(100,100,100);
+  doc.text('Verified Blood Donor',105,52,{align:'center'});
+  doc.setTextColor(0,0,0);
+  const info=[
+    ['International Donor ID',intlNum],
+    ['Blood Group',u.bloodGroup||'—'],
+    ['Donor Rank',`${rank.emoji} ${rank.name}`],
+    ['Total Donations',String(u.donations||0)],
+    ['Lives Saved',String(Math.floor((u.donations||0)*2.7))],
+    ['XP Points',String(u.xp||0)],
+    ['Country','Maldives 🇲🇻'],
+    ['Registry','BloodBridge Global Network'],
+    ['Issued',new Date().toLocaleDateString()],
+    ['Valid','Lifetime'],
+  ];
+  let y=70;
+  info.forEach(([k,v])=>{
+    doc.setFontSize(10);doc.setFont(undefined,'bold');doc.setTextColor(139,0,0);doc.text(k,30,y);
+    doc.setFont(undefined,'normal');doc.setTextColor(0,0,0);doc.text(v,110,y);
+    y+=12;
+  });
+  doc.setFillColor(139,0,0);doc.rect(0,270,210,30,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(9);
+  doc.text('BLOODBRIDGE · Connecting Hearts · Saving Lives · bloodbridge.jinerh.workers.dev',105,282,{align:'center'});
+  doc.save('bloodbridge-donor-passport.pdf');
+  toast('Donor Passport downloaded!','success');
+}
+
+function sharePassport(){
+  const u=currentUser||{name:'Donor'};
+  const intlNum=`BB-MV-${new Date().getFullYear()}-${(u.id||'').slice(0,6).toUpperCase()}`;
+  if(navigator.share){navigator.share({title:'My BloodBridge Donor Passport',text:`I'm a blood donor! My ID: ${intlNum}. Join me on BloodBridge to save lives!`,url:'https://bloodbridge.jinerh.workers.dev'});}
+  else{navigator.clipboard?.writeText(`BloodBridge Donor: ${u.name} | ID: ${intlNum} | ${u.bloodGroup} | ${u.donations||0} donations`);toast('Passport info copied!','success');}
+}
+
 function shareReferral(){
   const code=currentUser?.referralCode||'BB0000';
   if(navigator.share){navigator.share({title:'Join BLOODBRIDGE',text:`Join me on BLOODBRIDGE and save lives! Use my referral code: ${code}`,url:window.location.href});}
@@ -1768,42 +1857,95 @@ function renderDonorPassport() {
   const rank = getRank(u.xp);
   const myDonations = donations.filter(d=>d.donorId===u.id);
   const healthScore = Math.min(100, 60 + (u.donations||0)*4);
-  const lastDon = myDonations.sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
+  const lastDon = [...myDonations].sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
   const nextEligible = lastDon ? new Date(new Date(lastDon.date).getTime()+90*864e5) : null;
   const daysLeft = nextEligible ? Math.max(0,Math.ceil((nextEligible-new Date())/864e5)) : 0;
   const eligible = !nextEligible || new Date()>nextEligible;
-
+  const livesSaved = Math.floor((u.donations||0)*2.7);
+  // International Donor Number: BB-[CountryCode]-[Year]-[ID]
+  const intlNum = `BB-MV-${new Date().getFullYear()}-${(u.id||'GUEST').slice(0,6).toUpperCase()}`;
   const heatmapMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const donsByMonth = heatmapMonths.map(m=>myDonations.filter(d=>new Date(d.date).toLocaleString('en',{month:'short'})===m).length);
 
   return `
-  <!-- PASSPORT CARD -->
-  <div style="background:linear-gradient(135deg,#1a0a0a,#DC143C,#8B0000);border-radius:20px;padding:20px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(220,20,60,.4)">
-    <div style="position:absolute;right:-20px;top:-20px;width:120px;height:120px;background:rgba(255,255,255,.06);border-radius:50%"></div>
-    <div style="position:absolute;right:20px;bottom:-30px;width:80px;height:80px;background:rgba(255,255,255,.04);border-radius:50%"></div>
-    <div style="font-size:9px;font-weight:700;letter-spacing:.15em;opacity:.7;margin-bottom:12px">🩸 BLOODBRIDGE · DONOR PASSPORT</div>
-    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+  <!-- SHARE/DOWNLOAD BUTTONS -->
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button class="btn btn-ghost btn-sm" style="flex:1" onclick="downloadPassportCert()">📄 Certificate</button>
+    <button class="btn btn-ghost btn-sm" style="flex:1" onclick="sharePassport()">🔗 Share Passport</button>
+  </div>
+
+  <!-- DIGITAL PASSPORT CARD -->
+  <div id="passport-card" style="background:linear-gradient(135deg,#8B0000,#DC143C,#FF4560);border-radius:20px;padding:20px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;box-shadow:0 12px 40px rgba(220,20,60,.45)">
+    <div style="position:absolute;right:-30px;top:-30px;width:140px;height:140px;background:rgba(255,255,255,.07);border-radius:50%"></div>
+    <div style="position:absolute;left:-20px;bottom:-20px;width:100px;height:100px;background:rgba(255,255,255,.04);border-radius:50%"></div>
+
+    <!-- TOP BAR -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
       <div>
-        <div style="font-size:22px;font-weight:900">${u.name}</div>
-        <div style="font-size:11px;opacity:.75;margin-top:2px">ID: ${(u.id||'').slice(0,12).toUpperCase()}</div>
-        <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
-          <div style="background:rgba(255,255,255,.2);border-radius:10px;padding:8px 14px;text-align:center">
-            <div style="font-size:22px;font-weight:900">${u.bloodGroup||'—'}</div>
-            <div style="font-size:9px;opacity:.7">BLOOD TYPE</div>
-          </div>
-          <div>
-            <div style="font-size:16px;font-weight:800">${rank.emoji} ${rank.name}</div>
-            <div style="font-size:10px;opacity:.75">${u.donations||0} donations · ${u.xp||0} XP</div>
-            <div style="font-size:10px;opacity:.75">${u.island||'Maldives'}</div>
-          </div>
-        </div>
+        <div style="font-size:8px;font-weight:800;letter-spacing:.18em;opacity:.75">🩸 BLOODBRIDGE</div>
+        <div style="font-size:8px;letter-spacing:.12em;opacity:.6">DIGITAL DONOR PASSPORT</div>
       </div>
-      <div id="pp-qr" style="background:#fff;border-radius:10px;padding:6px;width:64px;height:64px;flex-shrink:0"></div>
+      <div style="font-size:8px;opacity:.7;text-align:right">
+        <div>🌍 GLOBAL REGISTRY</div>
+        <div style="margin-top:1px;font-weight:700">${intlNum}</div>
+      </div>
     </div>
-    <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2);display:flex;justify-content:space-between;font-size:10px;opacity:.8">
-      <span>Issued: ${new Date().toLocaleDateString()}</span>
-      <span>Valid: Lifetime</span>
-      <span>🌍 Global Registry</span>
+
+    <!-- MAIN INFO -->
+    <div style="display:flex;gap:12px;align-items:flex-start">
+      <div style="flex:1">
+        <div style="font-size:20px;font-weight:900;letter-spacing:-.3px">${u.name}</div>
+        <div style="font-size:10px;opacity:.7;margin-top:1px">${u.island||'Maldives'} · Since ${new Date(u.joinDate||Date.now()).getFullYear()}</div>
+
+        <!-- BLOOD TYPE BIG -->
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.18);border-radius:10px;padding:8px 14px;margin-top:10px">
+          <div style="font-size:28px;font-weight:900;letter-spacing:-1px">${u.bloodGroup||'—'}</div>
+          <div style="font-size:9px;opacity:.8;font-weight:700">BLOOD<br>TYPE</div>
+        </div>
+
+        <div style="margin-top:10px;font-size:11px;font-weight:700">${rank.emoji} ${rank.name}</div>
+      </div>
+
+      <!-- QR CODE -->
+      <div style="flex-shrink:0;text-align:center">
+        <div id="pp-qr" style="background:#fff;border-radius:10px;padding:5px;width:70px;height:70px"></div>
+        <div style="font-size:8px;opacity:.65;margin-top:4px">Scan to verify</div>
+      </div>
+    </div>
+
+    <!-- STATS ROW -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2);text-align:center">
+      <div><div style="font-size:18px;font-weight:900">${u.donations||0}</div><div style="font-size:8px;opacity:.7">DONATIONS</div></div>
+      <div style="border-left:1px solid rgba(255,255,255,.2)"><div style="font-size:18px;font-weight:900">${livesSaved}</div><div style="font-size:8px;opacity:.7">LIVES SAVED</div></div>
+      <div style="border-left:1px solid rgba(255,255,255,.2)"><div style="font-size:18px;font-weight:900">${u.xp||0}</div><div style="font-size:8px;opacity:.7">XP POINTS</div></div>
+      <div style="border-left:1px solid rgba(255,255,255,.2)"><div style="font-size:18px;font-weight:900">${u.badges?.length||0}</div><div style="font-size:8px;opacity:.7">BADGES</div></div>
+    </div>
+
+    <!-- BOTTOM BAR -->
+    <div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.15);display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:8px;opacity:.6">Issued: ${new Date().toLocaleDateString()} · Valid: Lifetime</div>
+      <div style="font-size:8px;opacity:.7;font-weight:700">${eligible?'✓ ELIGIBLE TO DONATE':'⏳ '+daysLeft+' DAYS LEFT'}</div>
+    </div>
+  </div>
+
+  <!-- INTERNATIONAL NUMBER -->
+  <div class="card" style="margin-bottom:12px;border-left:3px solid var(--red)">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:10px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.06em">🌍 International Donor Number</div>
+        <div style="font-size:20px;font-weight:900;color:var(--red);letter-spacing:2px;margin-top:4px">${intlNum}</div>
+        <div style="font-size:10px;color:var(--t3);margin-top:2px">Recognized in 28 countries · BloodBridge Global Network</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard?.writeText('${intlNum}');toast('Copied!','success')">Copy</button>
+    </div>
+  </div>
+
+  <!-- LIVES SAVED HIGHLIGHT -->
+  <div style="background:linear-gradient(135deg,rgba(22,163,74,.1),rgba(16,185,129,.05));border:1px solid rgba(22,163,74,.25);border-radius:16px;padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:14px">
+    <div style="font-size:36px">❤️</div>
+    <div>
+      <div style="font-size:26px;font-weight:900;color:#16A34A">${livesSaved} Lives</div>
+      <div style="font-size:12px;color:var(--t3)">Your ${u.donations||0} donations have potentially saved ${livesSaved} lives. Each unit can save up to 3 people.</div>
     </div>
   </div>
 
@@ -1851,17 +1993,59 @@ function renderDonorPassport() {
     </div>
   </div>
 
-  <!-- TIMELINE -->
-  <div class="card">
-    <div class="ct">📖 Donation Journal</div>
-    ${myDonations.length?myDonations.slice(0,5).map((d,i)=>`
-    <div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)">
-      <div style="width:8px;height:8px;border-radius:50%;background:var(--red);margin-top:4px;flex-shrink:0"></div>
+  <!-- DONATION CERTIFICATES -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">🏅 Donation Certificates</div>
+    ${myDonations.length?myDonations.slice(0,3).map((d,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--s2);border-radius:10px;margin-bottom:8px">
+      <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#D4AF37,#B8860B);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🏅</div>
       <div style="flex:1">
-        <div style="font-size:12px;font-weight:700;color:var(--t)">${d.hospital||'Blood Bank'} — ${d.bloodGroup}</div>
-        <div style="font-size:10px;color:var(--t3)">${new Date(d.date).toLocaleDateString()} · +${d.xp||100} XP</div>
+        <div style="font-size:12px;font-weight:700;color:var(--t)">Donation Certificate #${i+1}</div>
+        <div style="font-size:10px;color:var(--t3)">${d.hospital||'Blood Bank'} · ${new Date(d.date).toLocaleDateString()} · ${d.bloodGroup}</div>
       </div>
-    </div>`).join(''):`<div style="text-align:center;padding:16px;color:var(--t3);font-size:12px">No donations logged yet</div>`}
+      <button class="btn btn-ghost btn-sm" onclick="downloadDonationCert('${d.id}','${d.hospital||'Blood Bank'}','${d.date}','${d.bloodGroup}')">📄</button>
+    </div>`).join(''):`
+    <div style="text-align:center;padding:16px;color:var(--t3);font-size:12px">
+      <div style="font-size:28px;margin-bottom:6px">🏅</div>
+      Log your first donation to earn a certificate
+    </div>`}
+    <button class="btn btn-red btn-sm" style="width:100%;margin-top:4px" onclick="downloadPassportCert()">📄 Download Donor Certificate</button>
+  </div>
+
+  <!-- DONATION HISTORY TIMELINE -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">📖 Donation History</div>
+    ${myDonations.length?myDonations.slice(0,5).map((d,i)=>`
+    <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:0;flex-shrink:0">
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--red);flex-shrink:0"></div>
+        ${i<myDonations.length-1?`<div style="width:2px;flex:1;background:var(--border);min-height:20px"></div>`:''}
+      </div>
+      <div style="flex:1;padding-bottom:4px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div style="font-size:12px;font-weight:700;color:var(--t)">${d.hospital||'Blood Bank'}</div>
+          <div style="font-size:10px;font-weight:700;color:var(--gold)">+${d.xp||100} XP</div>
+        </div>
+        <div style="font-size:10px;color:var(--t3);margin-top:1px">${new Date(d.date).toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'})} · ${d.bloodGroup} · ${d.units||1} unit${d.units>1?'s':''}</div>
+        <div style="margin-top:4px"><span style="font-size:9px;background:rgba(22,163,74,.1);color:#16A34A;padding:1px 6px;border-radius:8px;font-weight:700">~${Math.floor((d.units||1)*2.7)} lives saved</span></div>
+      </div>
+    </div>`).join(''):`<div style="text-align:center;padding:20px;color:var(--t3);font-size:12px"><div style="font-size:32px;margin-bottom:6px">🩸</div>No donations yet — log your first!</div>`}
+    ${myDonations.length?`<button class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px" onclick="navigate('donate-form')">+ Log New Donation</button>`:''}
+  </div>
+
+  <!-- HEATMAP -->
+  <div class="card">
+    <div class="ct">📅 Donation Activity</div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:8px">
+      ${heatmapMonths.map((m,i)=>`<div style="text-align:center">
+        <div style="aspect-ratio:1;border-radius:6px;background:${donsByMonth[i]>0?'var(--red)':'var(--s3)'};opacity:${donsByMonth[i]>0?1:0.35}"></div>
+        <div style="font-size:8px;color:var(--t3);margin-top:2px">${m}</div>
+      </div>`).join('')}
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:10px;color:var(--t3)">
+      <div style="width:10px;height:10px;border-radius:2px;background:var(--s3);opacity:.35"></div> No donation
+      <div style="width:10px;height:10px;border-radius:2px;background:var(--red)"></div> Donated
+    </div>
   </div>`;
 }
 
