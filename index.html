@@ -648,7 +648,9 @@ function navigate(p){
     'donor-track':renderDonorTrack, 'blood-directory':renderBloodDirectory,
     'global-registry':renderGlobalRegistry, 'vision':renderVision,
     'verify':renderVerification, 'campaigns':renderCampaigns,
-    'advanced':renderAdvancedFeatures
+    'advanced':renderAdvancedFeatures, 'rank-cards':renderRankCards,
+    'intl-network':renderIntlNetwork, 'hospital-dash':renderHospitalDash,
+    'blood-bank':renderBloodBankDash
   };
   const fn=renders[p];
   document.getElementById('page').innerHTML=fn?fn():'<div class="empty"><div class="empty-icon">🔍</div><div>Page not found</div></div>';
@@ -771,6 +773,10 @@ function renderHome(){
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('campaigns');setbn('')">📢 Campaigns</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('vision');setbn('')">🌟 Our Vision</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1;background:linear-gradient(135deg,rgba(124,58,237,.08),rgba(37,99,235,.05));border-color:rgba(124,58,237,.3);color:var(--purple)" onclick="navigate('advanced');setbn('')">⚡ Advanced Features</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('rank-cards');setbn('')">🏆 Rank Cards</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('intl-network');setbn('')">🌐 International Network</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('hospital-dash');setbn('')">🏥 Hospital Dashboard</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('blood-bank');setbn('')">🩸 Blood Bank</button>
   </div>
 
   <div class="sec-hdr"><div class="sec-title">🌟 Community</div><button class="sec-link" onclick="navigate('community')">See All</button></div>
@@ -3163,6 +3169,260 @@ function renderPremiumCard(u) {
       <button class="btn btn-red btn-sm" style="padding:12px" onclick="downloadPremiumCard()">📥 Save Card</button>
       <button class="btn btn-ghost btn-sm" style="padding:12px" onclick="sharePassport()">🔗 Share</button>
     </div>
+  </div>`;
+}
+
+// ===== RANK CARDS =====
+const BB_RANKS = [
+  {rank:'New Donor',emoji:'🌱',min:0,color:'#78716C',desc:'Welcome to BloodBridge! Your journey begins here.',perks:['Basic donor profile','Access to blood requests','Community feed']},
+  {rank:'Lifesaver',emoji:'❤️',min:100,color:'#E53935',desc:'You have taken your first steps to saving lives.',perks:['Lifesaver badge','Priority alerts','Donor certificate']},
+  {rank:'Bronze Hero',emoji:'🥉',min:300,color:'#CD7F32',desc:'A true hero is emerging. The community recognizes you.',perks:['Bronze Hero card','Extended history','Camp invitations']},
+  {rank:'Silver Hero',emoji:'🥈',min:600,color:'#9CA3AF',desc:'You have proven your commitment to saving lives.',perks:['Silver Hero card','Verified badge','Emergency priority']},
+  {rank:'Gold Hero',emoji:'🥇',min:1000,color:'#D4AF37',desc:'Gold status — you are a pillar of the BloodBridge community.',perks:['Gold Hero card','Featured in leaderboard','Hospital recognition']},
+  {rank:'Platinum Hero',emoji:'💎',min:2000,color:'#E5E4E2',desc:'Platinum elite — you have touched countless lives.',perks:['Platinum card','Media features','Special badge']},
+  {rank:'Blood Warrior',emoji:'🔥',min:3500,color:'#FF6B00',desc:'Warriors never give up. You fight for every life.',perks:['Blood Warrior card','National recognition','Campaign leader']},
+  {rank:'Global Hero',emoji:'👑',min:6000,color:'#9333EA',desc:'Your impact crosses borders. The world knows your name.',perks:['Global Hero card','International features','Ambassador program']},
+  {rank:'Life Champion',emoji:'🏆',min:10000,color:'#D4AF37',desc:'Champion of champions. Legendary status achieved.',perks:['Champion coin','Life Champion badge','Hall of Fame entry']},
+  {rank:'World Lifesaver',emoji:'🌍',min:20000,color:'#2196F3',desc:'The highest honor. You have changed the world.',perks:['World Lifesaver card','BloodBridge Legend status','Permanent hall of fame']},
+];
+
+function renderRankCards() {
+  const u = currentUser||{xp:0,donations:0};
+  const currentRankIdx = BB_RANKS.reduce((ci,r,i)=>(u.xp||0)>=r.min?i:ci,0);
+  return `
+  <div style="background:linear-gradient(135deg,#D4AF37,#8B6914);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">BLOODBRIDGE RANKS</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">Donor Rank Cards</div>
+    <div style="font-size:11px;opacity:.85">10 ranks from New Donor to World Lifesaver</div>
+  </div>
+  ${BB_RANKS.map((r,i)=>{
+    const isUnlocked = i<=currentRankIdx;
+    const isCurrent = i===currentRankIdx;
+    return `<div style="background:#fff;border:${isCurrent?'2px solid '+r.color:'1px solid var(--border)'};border-radius:16px;overflow:hidden;margin-bottom:10px;box-shadow:${isCurrent?'0 4px 20px '+r.color+'40':'var(--shadow)'};${!isUnlocked?'opacity:.5':''}">
+      <!-- CARD HEADER -->
+      <div style="background:linear-gradient(135deg,${r.color}22,${r.color}11);padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid ${r.color}20">
+        <div style="font-size:32px">${r.emoji}</div>
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:900;color:var(--t)">${r.rank}</div>
+          <div style="font-size:10px;color:var(--t3);margin-top:1px">Min XP: ${r.min.toLocaleString()}</div>
+        </div>
+        ${isCurrent?`<span style="background:${r.color};color:#fff;font-size:9px;font-weight:800;padding:3px 10px;border-radius:10px">YOUR RANK</span>`:''}
+        ${isUnlocked&&!isCurrent?`<span style="background:#E8F5E9;color:#2E7D32;font-size:9px;font-weight:800;padding:3px 10px;border-radius:10px">✓ EARNED</span>`:''}
+        ${!isUnlocked?`<span style="background:var(--s2);color:var(--t3);font-size:9px;font-weight:700;padding:3px 10px;border-radius:10px">🔒 LOCKED</span>`:''}
+      </div>
+      <!-- CARD BODY -->
+      <div style="padding:12px 16px">
+        <div style="font-size:11px;color:var(--t2);margin-bottom:10px;line-height:1.5">${r.desc}</div>
+        <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Perks</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">
+          ${r.perks.map(p=>`<span style="font-size:9px;background:${r.color}15;color:${r.color};padding:2px 8px;border-radius:8px;font-weight:700">${p}</span>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('')}`;
+}
+
+// ===== INTERNATIONAL NETWORK =====
+function renderIntlNetwork() {
+  const shortage = [
+    {country:'🇲🇻 Maldives',blood:'O-',severity:'Critical',need:15},
+    {country:'🇱🇰 Sri Lanka',blood:'B-',severity:'High',need:8},
+    {country:'🇮🇳 India',blood:'AB-',severity:'Medium',need:24},
+    {country:'🇵🇰 Pakistan',blood:'O-',severity:'High',need:12},
+  ];
+  const intlLeaders = [
+    {rank:1,name:'James Smith',country:'🇦🇺',donations:25,xp:2500},
+    {rank:2,name:'Sara Johnson',country:'🇬🇧',donations:22,xp:2200},
+    {rank:3,name:'Ali Hassan',country:'🇲🇻',donations:20,xp:2000},
+    {rank:4,name:'Wei Zhang',country:'🇸🇬',donations:14,xp:1400},
+    {rank:5,name:'Maria Garcia',country:'🇺🇸',donations:19,xp:1900},
+  ];
+  return `
+  <div style="background:linear-gradient(135deg,#1A237E,#3949AB);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">GLOBAL NETWORK</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">International Features</div>
+    <div style="font-size:11px;opacity:.85">Cross-border coordination saving lives globally</div>
+  </div>
+
+  <!-- CROSS-BORDER EMERGENCY -->
+  <div class="card" style="margin-bottom:12px;border-left:3px solid var(--red)">
+    <div class="ct">🚨 Cross-Border Emergency Network</div>
+    <div style="background:rgba(229,57,53,.06);border:1px solid rgba(229,57,53,.2);border-radius:12px;padding:12px;margin-bottom:10px">
+      <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:4px">How it works</div>
+      <div style="font-size:11px;color:var(--t2);line-height:1.5">When a blood type is critically unavailable in one country, BloodBridge automatically broadcasts to verified donors in neighboring countries. Coordination happens with partner hospitals for safe blood transport.</div>
+    </div>
+    <button class="btn btn-red btn-sm" style="width:100%" onclick="toast('Cross-border emergency activated! Searching 3 countries...','success')">🌍 Activate Cross-Border Search</button>
+  </div>
+
+  <!-- WORLD BLOOD SHORTAGE MAP -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">🗺️ World Blood Shortage Map</div>
+    ${shortage.map(s=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:${s.severity==='Critical'?'rgba(229,57,53,.06)':s.severity==='High'?'rgba(245,158,11,.06)':'rgba(33,150,243,.06)'};border-radius:10px;margin-bottom:6px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:16px">${s.country.split(' ')[0]}</span>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--t)">${s.country.split(' ').slice(1).join(' ')}</div>
+          <div style="font-size:10px;color:var(--t3)">${s.blood} · Needs ${s.need} units</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:8px;background:${s.severity==='Critical'?'rgba(229,57,53,.15)':s.severity==='High'?'rgba(245,158,11,.15)':'rgba(33,150,243,.15)'};color:${s.severity==='Critical'?'var(--red)':s.severity==='High'?'var(--gold)':'var(--blue)'}">${s.severity}</span>
+        <button style="background:var(--red);color:#fff;border:none;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit" onclick="toast('Alerting ${s.blood} donors near ${s.country}!','success')">Help</button>
+      </div>
+    </div>`).join('')}
+  </div>
+
+  <!-- GLOBAL LEADERBOARD -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">🏆 Global Donation Leaderboard</div>
+    ${intlLeaders.map((l,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="width:28px;height:28px;border-radius:50%;background:${i===0?'linear-gradient(135deg,#D4AF37,#B8860B)':i===1?'linear-gradient(135deg,#9CA3AF,#6B7280)':i===2?'linear-gradient(135deg,#CD7F32,#8B4513)':'var(--s2)'};color:${i<3?'#fff':'var(--t3)'};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">${l.rank}</div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:700">${l.country} ${l.name}</div><div style="font-size:10px;color:var(--t3)">${l.donations} donations · ${l.xp.toLocaleString()} XP</div></div>
+      <div style="font-size:14px;font-weight:800;color:var(--red)">${l.xp.toLocaleString()}</div>
+    </div>`).join('')}
+  </div>
+
+  <!-- NGO PORTAL -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">🤝 International NGO Portal</div>
+    <div style="font-size:12px;color:var(--t2);line-height:1.5;margin-bottom:12px">NGOs and humanitarian organizations can access our API to coordinate blood donations during disasters, conflicts, and health emergencies globally.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button class="btn btn-ghost btn-sm" onclick="toast('NGO registration coming soon!','info')">Register NGO</button>
+      <button class="btn btn-ghost btn-sm" onclick="toast('Contacting BloodBridge Global team...','info')">Contact Team</button>
+    </div>
+  </div>
+
+  <!-- COUNTRY STATS -->
+  <div class="card">
+    <div class="ct">📊 Country Donation Statistics</div>
+    ${[{c:'🇲🇻',n:'Maldives',donors:48,donations:312,rate:'89%'},{c:'🇮🇳',n:'India',donors:2100,donations:8400,rate:'76%'},{c:'🇱🇰',n:'Sri Lanka',donors:340,donations:1200,rate:'82%'},{c:'🇦🇺',n:'Australia',donors:890,donations:3600,rate:'91%'},{c:'🇬🇧',n:'United Kingdom',donors:1200,donations:5400,rate:'88%'}].map(s=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:20px">${s.c}</span>
+        <div><div style="font-size:12px;font-weight:700">${s.n}</div><div style="font-size:10px;color:var(--t3)">${s.donors.toLocaleString()} donors</div></div>
+      </div>
+      <div style="text-align:right"><div style="font-size:12px;font-weight:700;color:var(--red)">${s.donations.toLocaleString()}</div><div style="font-size:9px;color:var(--green)">${s.rate} success</div></div>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ===== HOSPITAL DASHBOARD =====
+function renderHospitalDash() {
+  const inventory = [{bg:'A+',units:12,min:5},{bg:'A-',units:2,min:4},{bg:'B+',units:8,min:5},{bg:'B-',units:1,min:3},{bg:'O+',units:20,min:10},{bg:'O-',units:3,min:8},{bg:'AB+',units:4,min:3},{bg:'AB-',units:0,min:2}];
+  const expiring = [{bg:'B+',units:2,days:2},{bg:'O+',units:1,days:3},{bg:'A+',units:3,days:5}];
+  return `
+  <div style="background:linear-gradient(135deg,#1565C0,#1976D2);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">HOSPITAL PORTAL</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">Hospital Dashboard</div>
+    <div style="font-size:11px;opacity:.85;margin-bottom:10px">IGMH · Malé, Maldives · Verified Hospital</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);text-align:center;padding-top:10px;border-top:1px solid rgba(255,255,255,.2)">
+      <div><div style="font-size:18px;font-weight:900">4</div><div style="font-size:8px;opacity:.7">Active Requests</div></div>
+      <div><div style="font-size:18px;font-weight:900">247</div><div style="font-size:8px;opacity:.7">Total Units</div></div>
+      <div><div style="font-size:18px;font-weight:900">18</div><div style="font-size:8px;opacity:.7">Donors Today</div></div>
+      <div><div style="font-size:18px;font-weight:900">3</div><div style="font-size:8px;opacity:.7">⚠️ Expiring</div></div>
+    </div>
+  </div>
+
+  <!-- BLOOD INVENTORY -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">🩸 Blood Inventory</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+      ${inventory.map(i=>{const status=i.units===0?'critical':i.units<i.min?'low':'ok';return `<div style="background:${status==='critical'?'rgba(229,57,53,.1)':status==='low'?'rgba(245,158,11,.08)':'var(--s2)'};border:1px solid ${status==='critical'?'rgba(229,57,53,.3)':status==='low'?'rgba(245,158,11,.3)':'var(--border)'};border-radius:10px;padding:8px 4px;text-align:center">
+        <div style="font-size:12px;font-weight:900;color:${status==='critical'?'var(--red)':status==='low'?'var(--gold)':'var(--t)'}">${i.bg}</div>
+        <div style="font-size:18px;font-weight:900;color:${status==='critical'?'var(--red)':status==='low'?'var(--gold)':'var(--t)'}">${i.units}</div>
+        <div style="font-size:8px;color:var(--t3)">min ${i.min}</div>
+        <div style="font-size:8px;font-weight:700;color:${status==='critical'?'var(--red)':status==='low'?'var(--gold)':'var(--green)'}">${status==='critical'?'CRITICAL':status==='low'?'LOW':'OK'}</div>
+      </div>`;}).join('')}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+      <button class="btn btn-red btn-sm" style="padding:10px" onclick="openEmer()">🚨 Emergency Request</button>
+      <button class="btn btn-ghost btn-sm" style="padding:10px" onclick="toast('Stock report generated!','success')">📊 Stock Report</button>
+    </div>
+  </div>
+
+  <!-- EXPIRY TRACKING -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct" style="color:var(--gold)">⏰ Blood Expiry Tracking</div>
+    ${expiring.map(e=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:10px;margin-bottom:6px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(245,158,11,.15);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:var(--gold)">${e.bg}</div>
+        <div><div style="font-size:12px;font-weight:700">${e.units} unit${e.units>1?'s':''} expiring</div><div style="font-size:10px;color:var(--t3)">In ${e.days} days</div></div>
+      </div>
+      <button style="background:var(--gold);color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit" onclick="toast('Alert sent for urgent use of ${e.bg}!','success')">Alert</button>
+    </div>`).join('')}
+  </div>
+
+  <!-- ANALYTICS -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">📊 Hospital Analytics</div>
+    <div class="g2">
+      ${[['Donations This Month','142','↑ 12%',true],['Emergency Responses','18','↑ 5%',true],['Average Response Time','11 min','↓ 2 min',true],['Donor Satisfaction','94%','↑ 3%',true]].map(([l,v,c,up])=>`
+      <div style="background:var(--s2);border-radius:10px;padding:12px">
+        <div style="font-size:10px;color:var(--t3);margin-bottom:4px">${l}</div>
+        <div style="font-size:20px;font-weight:900;color:var(--t)">${v}</div>
+        <div style="font-size:10px;font-weight:700;color:${up?'var(--green)':'var(--red)'}">${c}</div>
+      </div>`).join('')}
+    </div>
+  </div>
+
+  <!-- FEATURES LIST -->
+  <div class="card">
+    <div class="ct">⚙️ Hospital Features</div>
+    ${['Blood Request Management','Donation Scheduling','Donor Verification','Campaign Manager','Performance Reports','Hospital Ratings System','EMR Integration','API Access'].map(f=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="font-size:12px;font-weight:600;color:var(--t)">✓ ${f}</div>
+      <button class="btn btn-ghost btn-sm" onclick="toast('${f} — opening...','info')">Open</button>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ===== BLOOD BANK DASHBOARD =====
+function renderBloodBankDash() {
+  return `
+  <div style="background:linear-gradient(135deg,#880E4F,#C2185B);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">BLOOD BANK PORTAL</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">Blood Bank Dashboard</div>
+    <div style="font-size:11px;opacity:.85">National Blood Center · Complete blood lifecycle management</div>
+  </div>
+
+  <!-- COLLECTION TRACKING -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">💉 Blood Collection Today</div>
+    <div class="g2" style="margin-bottom:10px">
+      <div style="background:var(--s2);border-radius:10px;padding:12px;text-align:center"><div style="font-size:26px;font-weight:900;color:var(--red)">34</div><div style="font-size:10px;color:var(--t3)">Units Collected</div></div>
+      <div style="background:var(--s2);border-radius:10px;padding:12px;text-align:center"><div style="font-size:26px;font-weight:900;color:var(--green)">31</div><div style="font-size:10px;color:var(--t3)">Units Passed QC</div></div>
+    </div>
+    <div style="font-size:10px;color:var(--t3);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Processing Stages</div>
+    ${[['Collection','34 units','done'],['Testing','31 units','done'],['Separation','28 units','in-progress'],['Storage','18 units','pending'],['Distribution','12 units','pending']].map(([s,u,st])=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="width:8px;height:8px;border-radius:50%;background:${st==='done'?'var(--green)':st==='in-progress'?'var(--gold)':'var(--s3)'};flex-shrink:0"></div>
+      <div style="flex:1;font-size:12px;font-weight:600;color:var(--t)">${s}</div>
+      <div style="font-size:11px;color:var(--t3)">${u}</div>
+      <span style="font-size:9px;padding:1px 8px;border-radius:8px;font-weight:700;background:${st==='done'?'#E8F5E9':st==='in-progress'?'rgba(245,158,11,.1)':'var(--s2)'};color:${st==='done'?'#2E7D32':st==='in-progress'?'var(--gold)':'var(--t3)'}">${st==='done'?'Done':st==='in-progress'?'Active':'Pending'}</span>
+    </div>`).join('')}
+  </div>
+
+  <!-- INVENTORY SYNC -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">🔄 Inventory Synchronization</div>
+    <div style="font-size:11px;color:var(--t2);line-height:1.5;margin-bottom:10px">Real-time sync with 5 connected hospitals. Last sync: 2 minutes ago.</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      ${['IGMH Malé ✓','ADK Hospital ✓','Regional Kulhudhuffushi ✓','Addu City Hospital ✓','HDh. Kulhudhuffushi ⏳'].map(h=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--s2);border-radius:8px"><div style="font-size:12px;font-weight:600">${h}</div><div style="font-size:10px;color:var(--green)">Synced</div></div>`).join('')}
+    </div>
+    <button class="btn btn-red btn-sm" style="width:100%;margin-top:10px" onclick="toast('Manual sync initiated for all hospitals!','success')">🔄 Sync All Now</button>
+  </div>
+
+  <!-- FEATURES -->
+  <div class="card">
+    <div class="ct">⚙️ Blood Bank Features</div>
+    ${['Blood Collection Tracking','Processing Workflow','Distribution Tracking','Expiry Management','Quality Records','Stock Forecasting AI','Donation Drive Management','Collection Center Dashboard'].map(f=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)">
+      <div style="font-size:12px;font-weight:600;color:var(--t)">✓ ${f}</div>
+      <button class="btn btn-ghost btn-sm" onclick="toast('${f} — loading...','info')">Open</button>
+    </div>`).join('')}
   </div>`;
 }
 
