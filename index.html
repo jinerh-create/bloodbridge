@@ -654,7 +654,8 @@ function navigate(p){
     'university':renderUniversity, 'social':renderSocial, 'premium-card':renderPremiumCardPage,
     'emergency-hub':renderEmergencyHub, 'community':renderCommunityHub,
     'world-rankings':renderWorldRankings, 'future':renderFutureFeatures,
-    'ngo-dash':renderNGODash, 'volunteer':renderVolunteer
+    'ngo-dash':renderNGODash, 'volunteer':renderVolunteer,
+    'wallet':renderWallet, 'hospital-ratings':renderHospitalRatings, 'forums':renderForums
   };
   const fn=renders[p];
   document.getElementById('page').innerHTML=fn?fn():'<div class="empty"><div class="empty-icon">🔍</div><div>Page not found</div></div>';
@@ -791,6 +792,9 @@ function renderHome(){
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('ngo-dash');setbn('')">🤝 NGO Dashboard</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('volunteer');setbn('')">🙋 Volunteer</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1;border-color:rgba(124,58,237,.3);color:var(--purple)" onclick="navigate('future');setbn('')">🔮 Future Features</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('wallet');setbn('')">💰 Donation Wallet</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('hospital-ratings');setbn('')">⭐ Hospital Ratings</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('forums');setbn('')">💬 Donor Forums</button>
   </div>
 
   <div class="sec-hdr"><div class="sec-title">🌟 Community</div><button class="sec-link" onclick="navigate('community')">See All</button></div>
@@ -3803,6 +3807,290 @@ function renderVolunteer() {
       </div>
     </div>`).join('')}
   </div>`;
+}
+
+// ===== BLOOD DONATION WALLET =====
+let walletTx = JSON.parse(localStorage.getItem('bb_wallet')||'[]');
+function renderWallet() {
+  const u = currentUser||{xp:0,donations:0,name:'Guest'};
+  const balance = (u.xp||0) + (u.donations||0)*50;
+  const tier = balance>=5000?'Platinum':balance>=2000?'Gold':balance>=500?'Silver':'Bronze';
+  const tierColor = {Platinum:'#E5E4E2',Gold:'#D4AF37',Silver:'#9CA3AF',Bronze:'#CD7F32'}[tier];
+
+  const defaultTx = [
+    {id:'t1',type:'earn',desc:'Blood Donation — IGMH',amount:150,date:'2026-06-01',icon:'🩸'},
+    {id:'t2',type:'earn',desc:'Emergency Response Bonus',amount:200,date:'2026-05-28',icon:'🚨'},
+    {id:'t3',type:'earn',desc:'Referral Reward — Ahmed',amount:50,date:'2026-05-20',icon:'👥'},
+    {id:'t4',type:'spend',desc:'Redeemed: BloodBridge T-Shirt',amount:-500,date:'2026-05-15',icon:'🎁'},
+    {id:'t5',type:'earn',desc:'Camp Attendance Bonus',amount:25,date:'2026-05-10',icon:'⛺'},
+  ];
+  const txList = [...defaultTx, ...walletTx].sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  return `
+  <!-- WALLET CARD -->
+  <div style="background:linear-gradient(135deg,#8B0000,#DC143C,#FF4560);border-radius:20px;padding:20px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(220,20,60,.4)">
+    <div style="position:absolute;right:-20px;top:-20px;width:120px;height:120px;background:rgba(255,255,255,.07);border-radius:50%"></div>
+    <div style="font-size:9px;font-weight:700;letter-spacing:.15em;opacity:.7;margin-bottom:8px">💰 BLOODBRIDGE WALLET</div>
+    <div style="font-size:11px;opacity:.8;margin-bottom:4px">Available Balance</div>
+    <div style="font-size:38px;font-weight:900;letter-spacing:-1px">${balance.toLocaleString()} <span style="font-size:16px;opacity:.8">BB Points</span></div>
+    <div style="margin-top:8px;display:flex;align-items:center;gap:8px">
+      <div style="background:rgba(255,255,255,.2);border-radius:8px;padding:4px 12px;font-size:11px;font-weight:700">${tier} Wallet</div>
+      <div style="font-size:10px;opacity:.7">≈ ${(balance*0.1).toFixed(2)} USD equivalent</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.2);text-align:center">
+      <div><div style="font-size:16px;font-weight:900">${(u.donations||0)*150}</div><div style="font-size:8px;opacity:.7">EARNED</div></div>
+      <div style="border-left:1px solid rgba(255,255,255,.2);border-right:1px solid rgba(255,255,255,.2)"><div style="font-size:16px;font-weight:900">500</div><div style="font-size:8px;opacity:.7">SPENT</div></div>
+      <div><div style="font-size:16px;font-weight:900">${txList.length}</div><div style="font-size:8px;opacity:.7">TRANSACTIONS</div></div>
+    </div>
+  </div>
+
+  <!-- EARN MORE -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">⚡ How to Earn BB Points</div>
+    ${[['🩸','Donate Blood','150 pts'],['🚨','Emergency Response','200 pts'],['👥','Refer a Donor','50 pts'],['⛺','Attend Camp','25 pts'],['✓','Get Verified','100 pts'],['📅','Streak Bonus','10 pts/streak']].map(([e,a,p])=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-size:18px">${e}</span><span style="font-size:12px;font-weight:600;color:var(--t)">${a}</span></div>
+      <span style="font-size:12px;font-weight:800;color:var(--gold)">+${p}</span>
+    </div>`).join('')}
+  </div>
+
+  <!-- REDEEM -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">🎁 Redeem Points</div>
+    ${[{name:'BloodBridge T-Shirt',pts:500,icon:'👕'},{name:'Donor Certificate (Premium)',pts:200,icon:'🏅'},{name:'Blood Test Voucher',pts:1000,icon:'🩺'},{name:'Hospital Priority Pass',pts:2000,icon:'🏥'},{name:'BloodBridge Hoodie',pts:1500,icon:'🧥'}].map(r=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--s2);border-radius:10px;margin-bottom:6px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:20px">${r.icon}</span>
+        <div><div style="font-size:12px;font-weight:700">${r.name}</div><div style="font-size:10px;color:var(--gold)">${r.pts.toLocaleString()} BB Points</div></div>
+      </div>
+      <button class="btn btn-red btn-sm" style="${balance<r.pts?'opacity:.5':''}" onclick="${balance>=r.pts?`redeemWallet('${r.name}',${r.pts})`:"toast('Not enough BB Points','error')"}">Redeem</button>
+    </div>`).join('')}
+  </div>
+
+  <!-- TRANSACTION HISTORY -->
+  <div class="card">
+    <div class="ct">📋 Transaction History</div>
+    ${txList.slice(0,8).map(tx=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="width:36px;height:36px;border-radius:10px;background:${tx.type==='earn'?'rgba(22,163,74,.1)':'rgba(229,57,53,.1)'};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${tx.icon}</div>
+      <div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--t)">${tx.desc}</div><div style="font-size:10px;color:var(--t3)">${tx.date}</div></div>
+      <div style="font-size:14px;font-weight:800;color:${tx.amount>0?'var(--green)':'var(--red)'}">${tx.amount>0?'+':''}${tx.amount.toLocaleString()}</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function redeemWallet(item, pts) {
+  const u = currentUser;
+  if(!u) return;
+  walletTx.unshift({id:uid(),type:'spend',desc:`Redeemed: ${item}`,amount:-pts,date:new Date().toISOString().split('T')[0],icon:'🎁'});
+  localStorage.setItem('bb_wallet',JSON.stringify(walletTx));
+  u.xp = Math.max(0,(u.xp||0)-pts);
+  toast(`🎁 Redeemed: ${item}! -${pts} BB Points`,'success');
+  navigate('wallet');
+}
+
+// ===== HOSPITAL RATINGS =====
+let hospitalReviews = JSON.parse(localStorage.getItem('bb_hosp_reviews')||'[]');
+function renderHospitalRatings() {
+  const hospList = [
+    {id:'igmh',name:'IGMH',city:'Malé, Maldives',flag:'🇲🇻',rating:4.8,reviews:124,verified:true,tags:['24/7','Emergency Ready','Friendly Staff'],img:'🏥'},
+    {id:'adk',name:'ADK Hospital',city:'Malé, Maldives',flag:'🇲🇻',rating:4.6,reviews:89,verified:true,tags:['Modern Equipment','Fast Process'],img:'🏥'},
+    {id:'aiims',name:'AIIMS New Delhi',city:'New Delhi, India',flag:'🇮🇳',rating:4.9,reviews:1240,verified:true,tags:['World Class','Research Center'],img:'🏥'},
+    {id:'nbc',name:'National Blood Center',city:'Colombo, Sri Lanka',flag:'🇱🇰',rating:4.5,reviews:234,verified:true,tags:['Large Stock','Multiple Types'],img:'🩸'},
+    {id:'nhs',name:'NHS Blood Service',city:'London, UK',flag:'🇬🇧',rating:4.7,reviews:3400,verified:true,tags:['Safe','Efficient','Caring'],img:'🏥'},
+  ];
+  const myReviews = [...hospitalReviews];
+  return `
+  <div style="font-size:15px;font-weight:800;color:var(--t);margin-bottom:12px">⭐ Hospital & Blood Bank Ratings</div>
+  <div class="card" style="margin-bottom:12px;background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(229,57,53,.04));border-color:rgba(245,158,11,.3)">
+    <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:4px">📢 Your reviews help others find the best facilities</div>
+    <div style="font-size:11px;color:var(--t3)">Rate your experience after donating — earn 25 BB Points per review!</div>
+  </div>
+  ${hospList.map(h=>`
+  <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow)">
+    <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px">
+      <div style="width:48px;height:48px;border-radius:14px;background:rgba(229,57,53,.1);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">${h.img}</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+          <div style="font-size:14px;font-weight:800;color:var(--t)">${h.name}</div>
+          ${h.verified?'<span style="font-size:9px;background:#E8F5E9;color:#2E7D32;padding:1px 6px;border-radius:8px;font-weight:700">✓</span>':''}
+        </div>
+        <div style="font-size:10px;color:var(--t3)">${h.flag} ${h.city}</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:6px">
+          <div style="display:flex;gap:1px">${[1,2,3,4,5].map(s=>`<span style="font-size:14px;color:${s<=Math.round(h.rating)?'#F59E0B':'#E5E7EB'}">★</span>`).join('')}</div>
+          <div style="font-size:12px;font-weight:800;color:var(--t)">${h.rating}</div>
+          <div style="font-size:10px;color:var(--t3)">(${h.reviews.toLocaleString()} reviews)</div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
+          ${h.tags.map(t=>`<span style="font-size:9px;background:rgba(229,57,53,.08);color:var(--red);padding:2px 7px;border-radius:8px;font-weight:700">${t}</span>`).join('')}
+        </div>
+      </div>
+    </div>
+    <button style="width:100%;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:9px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--t)" onclick="openHospitalReview('${h.id}','${h.name}')">⭐ Write a Review (+25 BB Points)</button>
+  </div>`).join('')}
+  ${myReviews.length?`<div class="ct" style="margin-top:8px">Your Reviews</div>${myReviews.map(r=>`<div style="background:rgba(229,57,53,.04);border:1px solid rgba(229,57,53,.15);border-radius:12px;padding:12px;margin-bottom:8px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><div style="font-size:13px;font-weight:700">${r.hospital}</div><div style="display:flex;gap:1px">${[1,2,3,4,5].map(s=>`<span style="font-size:12px;color:${s<=r.stars?'#F59E0B':'#E5E7EB'}">★</span>`).join('')}</div></div><div style="font-size:11px;color:var(--t2)">${r.text}</div></div>`).join('')}`:''}`;
+}
+
+function openHospitalReview(id, name) {
+  const mc = document.getElementById('mc');
+  if(!mc) return;
+  mc.innerHTML=`<div class="mo" onclick="if(event.target===this){document.getElementById('mc').innerHTML=''}"><div class="md" style="max-width:420px">
+    <div class="mh"><div class="mt">⭐ Review ${name}</div><button class="xb" onclick="document.getElementById('mc').innerHTML=''">×</button></div>
+    <div class="mb">
+      <div style="font-size:11px;font-weight:700;color:var(--t3);margin-bottom:8px;text-transform:uppercase">Your Rating</div>
+      <div style="display:flex;gap:8px;margin-bottom:14px" id="star-sel">
+        ${[1,2,3,4,5].map(s=>`<span style="font-size:32px;cursor:pointer;color:#E5E7EB;transition:color .15s" onclick="selStars(${s})" id="star-${s}">★</span>`).join('')}
+      </div>
+      <div class="form-group"><label>Your Experience</label><textarea id="rev-text" rows="3" placeholder="How was your donation experience? Was staff friendly? Was the process fast?"></textarea></div>
+      <div class="form-group"><label>Tags (optional)</label><input id="rev-tags" placeholder="e.g. Friendly Staff, Fast Process"></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('mc').innerHTML=''">Cancel</button>
+      <button class="btn btn-p btn-sm" onclick="submitHospReview('${id}','${name}')">Submit Review (+25 pts)</button>
+    </div>
+  </div></div>`;
+  window._selStars=3;
+  selStars(3);
+}
+
+function selStars(n) {
+  window._selStars=n;
+  [1,2,3,4,5].forEach(s=>{const el=document.getElementById('star-'+s);if(el)el.style.color=s<=n?'#F59E0B':'#E5E7EB';});
+}
+
+function submitHospReview(id,name) {
+  const text=document.getElementById('rev-text')?.value?.trim();
+  if(!text){toast('Please write your experience','error');return;}
+  hospitalReviews.unshift({id:uid(),hospital:name,stars:window._selStars||3,text,date:new Date().toISOString().split('T')[0]});
+  localStorage.setItem('bb_hosp_reviews',JSON.stringify(hospitalReviews));
+  if(currentUser){currentUser.xp=(currentUser.xp||0)+25;localStorage.setItem('bb_user',JSON.stringify(currentUser));}
+  document.getElementById('mc').innerHTML='';
+  toast('Review submitted! +25 BB Points earned 🎉','success');
+  navigate('hospital-ratings');
+}
+
+// ===== DONOR FORUMS =====
+let forumPosts = JSON.parse(localStorage.getItem('bb_forums')||JSON.stringify([
+  {id:'f1',category:'general',title:'How do you prepare for your donation?',author:'Ahmed Ali',flag:'🇲🇻',replies:12,views:89,likes:23,time:'2h ago',pinned:true,body:'I usually drink a lot of water the night before and eat a good breakfast. What works for you?'},
+  {id:'f2',category:'rare',title:'Looking for other O- donors in Malé',author:'Fatima Hassan',flag:'🇲🇻',replies:8,views:45,likes:15,time:'5h ago',pinned:false,body:'Are there other O- donors in Malé? Would love to connect and coordinate for emergencies.'},
+  {id:'f3',category:'help',title:'Can I donate if I take daily vitamins?',author:'Rahul K.',flag:'🇮🇳',replies:5,views:34,likes:8,time:'1d ago',pinned:false,body:'I take Vitamin D and Iron supplements daily. Is this okay for blood donation?'},
+  {id:'f4',category:'stories',title:'My 25th donation story — it gets easier!',author:'James Smith',flag:'🇦🇺',replies:19,views:124,likes:67,time:'2d ago',pinned:false,body:'Just hit 25 donations! First time I was so nervous but now it\'s routine. Here\'s my journey...'},
+  {id:'f5',category:'general',title:'What\'s the best time of day to donate?',author:'Sara J.',flag:'🇬🇧',replies:14,views:78,likes:31,time:'3d ago',pinned:false,body:'Morning, afternoon, or evening? Does it matter for the donation process?'},
+]));
+let forumCat='all';
+
+function renderForums() {
+  const cats=[{k:'all',l:'All'},{k:'general',l:'💬 General'},{k:'rare',l:'🩸 Rare Blood'},{k:'help',l:'❓ Help'},{k:'stories',l:'❤️ Stories'}];
+  const filtered = forumCat==='all'?forumPosts:forumPosts.filter(p=>p.category===forumCat);
+  return `
+  <div style="background:linear-gradient(135deg,#1A237E,#283593);border-radius:20px;padding:16px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">COMMUNITY</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">💬 Donor Forums</div>
+    <div style="font-size:11px;opacity:.85">${forumPosts.length} discussions · Join the conversation</div>
+  </div>
+
+  <!-- CATEGORY TABS -->
+  <div class="chip-row" style="margin-bottom:12px">
+    ${cats.map(c=>`<div class="chip ${forumCat===c.k?'active':''}" onclick="forumCat='${c.k}';navigate('forums')">${c.l}</div>`).join('')}
+  </div>
+
+  <!-- NEW POST BUTTON -->
+  <button class="btn btn-red" style="margin-bottom:12px" onclick="openNewPost()">✏️ Start a New Discussion</button>
+
+  <!-- POSTS -->
+  ${filtered.map(p=>`
+  <div style="background:#fff;border:1px solid ${p.pinned?'rgba(245,158,11,.4)':'var(--border)'};border-radius:14px;padding:14px;margin-bottom:8px;box-shadow:var(--shadow)${p.pinned?';border-left:4px solid var(--gold)':''}">
+    <div style="display:flex;align-items:flex-start;gap:10px">
+      <div style="width:38px;height:38px;border-radius:50%;background:rgba(229,57,53,.1);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--red);flex-shrink:0">${p.author[0]}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap">
+          ${p.pinned?'<span style="font-size:9px;background:rgba(245,158,11,.15);color:var(--gold);padding:1px 6px;border-radius:8px;font-weight:800">📌 PINNED</span>':''}
+          <span style="font-size:9px;background:rgba(37,99,235,.1);color:var(--blue);padding:1px 6px;border-radius:8px;font-weight:700">${p.category}</span>
+        </div>
+        <div style="font-size:13px;font-weight:800;color:var(--t);margin-bottom:4px;cursor:pointer" onclick="openPostDetail('${p.id}')">${p.title}</div>
+        <div style="font-size:11px;color:var(--t3);line-height:1.4;margin-bottom:8px">${p.body.slice(0,120)}...</div>
+        <div style="display:flex;align-items:center;gap:12px;font-size:10px;color:var(--t3)">
+          <span>${p.flag} ${p.author}</span>
+          <span>💬 ${p.replies}</span>
+          <span>👁 ${p.views}</span>
+          <span style="cursor:pointer" onclick="likePost('${p.id}',this)">❤️ ${p.likes}</span>
+          <span style="margin-left:auto">${p.time}</span>
+        </div>
+      </div>
+    </div>
+  </div>`).join('')}
+  ${!filtered.length?`<div class="empty"><div class="empty-icon">💬</div><div>No posts in this category yet</div><button class="btn btn-red btn-sm" style="margin-top:12px" onclick="openNewPost()">Start the first discussion</button></div>`:''}`;
+}
+
+function openNewPost() {
+  const mc=document.getElementById('mc');
+  if(!mc) return;
+  mc.innerHTML=`<div class="mo" onclick="if(event.target===this){document.getElementById('mc').innerHTML=''}"><div class="md">
+    <div class="mh"><div class="mt">✏️ New Discussion</div><button class="xb" onclick="document.getElementById('mc').innerHTML=''">×</button></div>
+    <div class="mb">
+      <div class="form-group"><label>Category</label><select id="fp-cat">
+        <option value="general">💬 General</option><option value="rare">🩸 Rare Blood</option>
+        <option value="help">❓ Help & Questions</option><option value="stories">❤️ Stories</option>
+      </select></div>
+      <div class="form-group"><label>Title</label><input id="fp-title" placeholder="What would you like to discuss?"></div>
+      <div class="form-group"><label>Your Post</label><textarea id="fp-body" rows="4" placeholder="Share your thoughts, questions, or story..."></textarea></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('mc').innerHTML=''">Cancel</button>
+      <button class="btn btn-p btn-sm" onclick="submitForumPost()">Post Discussion</button>
+    </div>
+  </div></div>`;
+}
+
+function submitForumPost() {
+  const title=document.getElementById('fp-title')?.value?.trim();
+  const body=document.getElementById('fp-body')?.value?.trim();
+  const cat=document.getElementById('fp-cat')?.value||'general';
+  if(!title||!body){toast('Please fill in title and content','error');return;}
+  forumPosts.unshift({id:uid(),category:cat,title,body,author:currentUser?.name||'Anonymous',flag:'🇲🇻',replies:0,views:1,likes:0,time:'Just now',pinned:false});
+  localStorage.setItem('bb_forums',JSON.stringify(forumPosts));
+  document.getElementById('mc').innerHTML='';
+  toast('Discussion posted! 🎉','success');
+  navigate('forums');
+}
+
+function openPostDetail(id) {
+  const p=forumPosts.find(x=>x.id===id);
+  if(!p) return;
+  p.views++;
+  localStorage.setItem('bb_forums',JSON.stringify(forumPosts));
+  const mc=document.getElementById('mc');
+  if(!mc) return;
+  mc.innerHTML=`<div class="mo" onclick="if(event.target===this){document.getElementById('mc').innerHTML=''}"><div class="md modal-lg">
+    <div class="mh"><div class="mt">${p.title}</div><button class="xb" onclick="document.getElementById('mc').innerHTML=''">×</button></div>
+    <div class="mb">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <div style="width:32px;height:32px;border-radius:50%;background:rgba(229,57,53,.1);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--red)">${p.author[0]}</div>
+        <div><div style="font-size:12px;font-weight:700">${p.flag} ${p.author}</div><div style="font-size:10px;color:var(--t3)">${p.time}</div></div>
+      </div>
+      <div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:14px">${p.body}</div>
+      <div class="div"></div>
+      <div class="form-group"><label>Reply</label><textarea id="reply-text" rows="3" placeholder="Share your thoughts..."></textarea></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('mc').innerHTML=''">Close</button>
+      <button class="btn btn-p btn-sm" onclick="submitReply('${p.id}')">Post Reply</button>
+    </div>
+  </div></div>`;
+}
+
+function submitReply(id) {
+  const p=forumPosts.find(x=>x.id===id);
+  if(p) p.replies++;
+  localStorage.setItem('bb_forums',JSON.stringify(forumPosts));
+  document.getElementById('mc').innerHTML='';
+  toast('Reply posted!','success');
+  navigate('forums');
+}
+
+function likePost(id,el) {
+  const p=forumPosts.find(x=>x.id===id);
+  if(p){p.likes++;el.textContent='❤️ '+p.likes;localStorage.setItem('bb_forums',JSON.stringify(forumPosts));}
 }
 
 // ===== GLOBAL MAP =====
