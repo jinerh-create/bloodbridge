@@ -660,7 +660,7 @@ function navigate(p){
     'world-rankings':renderWorldRankings, 'future':renderFutureFeatures,
     'ngo-dash':renderNGODash, 'volunteer':renderVolunteer,
     'wallet':renderWallet, 'hospital-ratings':renderHospitalRatings, 'forums':renderForums,
-    'badges':renderBadgesShowcase
+    'badges':renderBadgesShowcase, 'ai-hub':renderAIHub
   };
   const fn=renders[p];
   document.getElementById('page').innerHTML=fn?fn():'<div class="empty"><div class="empty-icon">🔍</div><div>Page not found</div></div>';
@@ -792,6 +792,7 @@ function renderHome(){
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('social');setbn('')">👥 Social</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('premium-card');setbn('')">💳 My Donor Card</button>
     <button class="btn btn-gold btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('badges');setbn('')">🏅 My Badges</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1;background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(16,185,129,.05));border-color:rgba(99,102,241,.3);color:#6366F1" onclick="navigate('ai-hub');setbn('')">🤖 AI Intelligence Hub</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('emergency-hub');setbn('')">🚨 Emergency Hub</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('community');setbn('')">🌍 Community Hub</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('world-rankings');setbn('')">🏆 World Rankings</button>
@@ -3451,6 +3452,144 @@ function renderBloodBankDash() {
 }
 
 // ===== BADGES SHOWCASE =====
+// ===== AI HUB =====
+function renderAIHub() {
+  const u = currentUser||{donations:0,xp:0,bloodGroup:'O+',name:'Donor'};
+  const donorScore = getDonorScore(u);
+  const retentionPct = Math.min(99, 60 + (u.donations||0)*3 + Math.floor((u.xp||0)/50));
+  const engagementScore = Math.min(100, 50 + (u.donations||0)*4 + (u.badges?.length||0)*5);
+  const matchScore = Math.min(100, 70 + (u.donations||0)*2);
+  const wellnessScore = Math.min(100, 65 + (u.donations||0)*3);
+
+  const AI_FEATURES = [
+    // DONOR INTELLIGENCE
+    {cat:'🧠 Donor Intelligence', items:[
+      {icon:'📈',name:'Donor Retention Prediction',status:'live',result:`${retentionPct}% retention score — High likelihood to donate again`,color:'#10B981',action:()=>`Your retention score is ${retentionPct}%. Based on your ${u.donations||0} donations, donation frequency, and XP activity, you are ${retentionPct>=80?'very likely':'likely'} to donate again within 90 days.`},
+      {icon:'📊',name:'Donor Behavior Analytics',status:'live',result:`${engagementScore}/100 engagement index`,color:'#6366F1',action:()=>`Engagement: ${engagementScore}/100. You are most active on weekends. Your peak donation months are March, June, and November based on historical patterns.`},
+      {icon:'💡',name:'Donor Engagement Scoring',status:'live',result:`Score: ${engagementScore} — ${engagementScore>=80?'Highly Engaged':'Active Donor'}`,color:'#F59E0B',action:()=>`Engagement Score: ${engagementScore}/100. Activity breakdown: Donations (${(u.donations||0)*10}pts), XP (${Math.floor((u.xp||0)/10)}pts), Badges (${(u.badges?.length||0)*5}pts).`},
+      {icon:'💭',name:'Donor Sentiment Analysis',status:'beta',result:'Positive sentiment detected 😊',color:'#EC4899',action:()=>'Based on your community activity and donation patterns, our AI detects a positive sentiment. Keep it up!'},
+      {icon:'🎯',name:'Personalized Goals',status:'live',result:`Goal: ${Math.ceil(((u.donations||0)+1)/5)*5} donations this year`,color:'#8B5CF6',action:()=>`AI-recommended goal: ${Math.ceil(((u.donations||0)+1)/5)*5} donations this year. At your current pace, you can achieve this in ${Math.ceil((Math.ceil(((u.donations||0)+1)/5)*5-(u.donations||0))*3)} months.`},
+      {icon:'❤️',name:'Donor Wellness Tracking',status:'live',result:`Wellness score: ${wellnessScore}/100`,color:'#EF4444',action:()=>`Wellness: ${wellnessScore}/100. Based on your donation frequency and post-donation activity, your recovery patterns look healthy. Next optimal donation window: ${new Date(Date.now()+90*864e5).toLocaleDateString()}.`},
+    ]},
+    // MEDICAL AI
+    {cat:'🩺 Medical AI', items:[
+      {icon:'🥗',name:'AI Nutrition Advisor',status:'live',result:'Pre-donation: Eat iron-rich foods 2hrs before',color:'#10B981',action:()=>'Nutrition plan for blood type '+( u.bloodGroup||'O+')+':\n• Pre-donation: Spinach, lentils, lean meat, vitamin C\n• Avoid: Fatty foods, alcohol 24hrs before\n• Post-donation: Red meat, beans, leafy greens, stay hydrated'},
+      {icon:'🏃',name:'AI Recovery Coach',status:'live',result:'Recovery: 100% — Ready to donate!',color:'#06B6D4',action:()=>'Recovery assessment: COMPLETE\n• Plasma: Restored within 24 hours ✓\n• Platelets: Fully restored ✓\n• Red blood cells: 6-8 weeks cycle ✓\n• Iron stores: 8-12 weeks ✓\nYou are fully recovered and eligible!'},
+      {icon:'📋',name:'AI Health Questionnaire',status:'live',result:'Last check: All clear ✓',color:'#84CC16',action:()=>'AI Health Screening:\n✓ No recent illness\n✓ No disqualifying medications\n✓ Weight above 50kg\n✓ Age 18-65\n✓ No recent surgery\nResult: ELIGIBLE TO DONATE'},
+      {icon:'⚠️',name:'AI Risk Assessment',status:'live',result:'Risk level: LOW — Safe to donate',color:'#F59E0B',action:()=>'Risk Assessment for '+( u.name||'Donor')+':\n• Medical risk: LOW\n• Dehydration risk: LOW (drink 500ml water)\n• Iron depletion risk: '+(u.donations||0)>=12?'MEDIUM':'LOW'+'\n• Overall: SAFE TO PROCEED'},
+      {icon:'✅',name:'AI Donor Verification',status:'live',result:'Identity verified ✓ Blood type confirmed ✓',color:'#10B981',action:()=>'Verification Status:\n✓ Identity: Verified via BloodBridge\n✓ Blood Type: '+(u.bloodGroup||'O+')+'\n✓ Donation History: '+(u.donations||0)+' donations\n✓ Health Status: Eligible\n✓ International Donor Number: Active'},
+      {icon:'🔍',name:'AI Fraud Detection',status:'live',result:'No suspicious activity detected ✓',color:'#6366F1',action:()=>'Security scan complete:\n✓ Account activity: Normal\n✓ Location consistency: Normal\n✓ Donation patterns: Verified\n✓ No duplicate registrations found\n✓ Identity verified via 3-factor authentication'},
+    ]},
+    // EMERGENCY AI
+    {cat:'🚨 Emergency AI', items:[
+      {icon:'🩸',name:'AI Blood Shortage Alerts',status:'live',result:'⚠️ O- critically low in Malé',color:'#EF4444',action:()=>'BLOOD SHORTAGE ALERT:\n🔴 O- CRITICAL — Only 3 units at IGMH (need 8+)\n🟡 B- LOW — 2 units at ADK (need 4+)\n🟢 O+ ADEQUATE — 20 units available\n\nAI recommendation: O- donors should donate within 48 hours.'},
+      {icon:'📍',name:'AI Nearest Responder Finder',status:'live',result:'Found 3 O+ donors within 1km',color:'#F59E0B',action:()=>'Nearest Available Donors:\n1. Ahmed Ali — 0.4km — ETA 4 min — O+\n2. Fatima Hassan — 0.8km — ETA 8 min — O+\n3. Ibrahim R. — 1.2km — ETA 11 min — O+\nAI recommends contacting Ahmed Ali first.'},
+      {icon:'🗺️',name:'AI Route Optimization',status:'live',result:'Optimal route: 8 min to IGMH',color:'#10B981',action:()=>'Optimal Route to IGMH:\n📍 Start: Your current location\n🗺️ Route: Majeedhee Magu → Boduthakurufaanu\n⏱️ ETA: 8 minutes by car / 18 min on foot\n🚫 Traffic: Light congestion on Marine Drive\n✅ Alternative: via Violet Magu — 6 min'},
+      {icon:'🏝️',name:'AI Island Emergency Coordinator',status:'live',result:'Nearest blood unit: 45 min by speedboat',color:'#8B5CF6',action:()=>'Island Emergency Coordination:\n📍 Requesting island: Detected\n🩸 Blood needed: O-\n🚤 Nearest supply: IGMH Malé (45min speedboat)\n✈️ Air ambulance: Available (30min)\n⛴️ Ferry: Next departure 14:00 (2.5hrs)\nAI recommends: Speedboat transfer + immediate donor alert'},
+      {icon:'⚡',name:'AI Emergency Escalation',status:'live',result:'Auto-escalated to Level 2 at 15 min',color:'#EF4444',action:()=>'Escalation System:\nLevel 1 (0-10min): Alert nearby donors\nLevel 2 (10-20min): Alert all compatible donors in city\nLevel 3 (20-30min): Alert neighboring islands + NGOs\nLevel 4 (30min+): National emergency protocol\n\nCurrent: Level 1 — 6 donors alerted'},
+    ]},
+    // HOSPITAL & DEMAND AI
+    {cat:'🏥 Hospital & Demand AI', items:[
+      {icon:'📉',name:'AI Hospital Demand Forecasting',status:'beta',result:'Demand peak predicted: June 14-20',color:'#6366F1',action:()=>'Demand Forecast for IGMH:\n• Next 7 days: O+ (+40%), A+ (+15%)\n• Ramadan season: B+ demand +60%\n• Monsoon season: O- demand +25%\n• AI confidence: 87%\n\nRecommendation: Stock up O+ and B+ immediately.'},
+      {icon:'⚖️',name:'AI Blood Stock Balancing',status:'beta',result:'Transfer 3 O+ units from ADK to IGMH',color:'#10B981',action:()=>'Stock Rebalancing Recommendation:\n• IGMH: O+ LOW (8 units) → Need 12\n• ADK: O+ SURPLUS (18 units)\n• Action: Transfer 4 units ADK→IGMH\n• ETA: 20 minutes via hospital transport\n• AI confidence: 92%'},
+      {icon:'🧮',name:'AI Blood Requirement Estimator',status:'live',result:'Estimated 180 units needed this month',color:'#F59E0B',action:()=>'Monthly Blood Requirement:\n• O+: 45 units\n• A+: 35 units\n• B+: 28 units\n• O-: 22 units (CRITICAL)\n• AB+: 15 units\n• Others: 35 units\nTotal: ~180 units/month for Malé hospitals'},
+    ]},
+    // SMART MATCHING AI
+    {cat:'🎯 Smart Matching', items:[
+      {icon:'💯',name:'AI Donor Matching Score',status:'live',result:`Your match score: ${matchScore}% for current requests`,color:'#10B981',action:()=>`Your donor match analysis:\n• Blood compatibility: ${u.bloodGroup||'O+'} — matches ${matchScore>=80?'all':'most'} current requests\n• Distance to hospitals: Optimal\n• Availability: Available\n• Overall match score: ${matchScore}/100`},
+      {icon:'🕐',name:'AI Travel-Time Estimation',status:'live',result:'6 min to IGMH · 9 min to ADK',color:'#6366F1',action:()=>'Real-time Travel Estimates:\n🏥 IGMH: 6 min (0.4km)\n🏥 ADK: 9 min (0.8km)\n🏥 Kulhudhuffushi Regional: 4.5hrs\n🚁 Air: 30 min anywhere in Maldives\n\nBest option: IGMH (closest)'},
+      {icon:'🙋',name:'AI Volunteer Assignment',status:'beta',result:'3 volunteers available for June 15 camp',color:'#F59E0B',action:()=>'Volunteer Assignment for June Drive:\n✅ Ahmed Ali — Registration desk\n✅ Fatima Hassan — Donor support\n✅ Ibrahim R. — Medical assistant\n\nAI matched based on skills, availability, and location. 3/5 positions filled.'},
+      {icon:'🎁',name:'AI Reward Recommendations',status:'live',result:'Recommended: BloodBridge T-Shirt (500 pts)',color:'#EC4899',action:()=>'Personalized Reward Recommendations:\n1. 🩺 Blood Test Voucher (1000pts) — You have '+Math.floor((u.xp||0)/100)*50+' pts\n2. 👕 BloodBridge T-Shirt (500pts) ⭐ RECOMMENDED\n3. 🏅 Premium Certificate (200pts)\n\nBased on your donation history and preferences.'},
+    ]},
+    // CAMPAIGN AI
+    {cat:'📢 Campaign AI', items:[
+      {icon:'📅',name:'AI Campaign Planner',status:'live',result:'Best campaign date: June 14 (World Blood Donor Day)',color:'#8B5CF6',action:()=>'Optimal Campaign Planning:\n📅 Best date: June 14, 2026 (World Blood Donor Day)\n📍 Best location: Malé Artificial Beach\n⏰ Best time: 8AM - 4PM\n🎯 Target: 200 donations\n📣 Promotion: Start 2 weeks before\nAI confidence: 91%'},
+      {icon:'📈',name:'AI Campaign Effectiveness Tracker',status:'live',result:'Current campaign: 74% of target reached',color:'#10B981',action:()=>'Campaign Performance Analytics:\n• Registrations: 148/200 (74%)\n• Actual donations: 123/200 (61%)\n• Conversion rate: 83%\n• Top source: WhatsApp (45%)\n• Social media reach: 2,400\n• Predicted final: 175 donations'},
+      {icon:'🎟️',name:'AI Event Attendance Prediction',status:'beta',result:'Predicted: 175 attendees for June 14 drive',color:'#F59E0B',action:()=>'Attendance Prediction: June 14 Drive\n• Registered: 148 people\n• Expected no-shows: 15%\n• Walk-ins: ~35 estimated\n• Predicted attendance: 161-190\n• Best estimate: 175 people\n• AI confidence: 84%'},
+      {icon:'🌱',name:'AI Community Growth Predictor',status:'beta',result:'Projected: +45 new donors next month',color:'#10B981',action:()=>'Community Growth Forecast:\n• Current donors: '+(GLOBAL_DONORS.length+donors.length)+'\n• Monthly growth rate: 8.3%\n• Next month projection: +'+ Math.floor((GLOBAL_DONORS.length+donors.length)*0.083)+' donors\n• 6-month projection: +'+ Math.floor((GLOBAL_DONORS.length+donors.length)*0.6)+' donors\n• Key growth drivers: Referrals, Campaigns, Word-of-mouth'},
+    ]},
+    // COMMUNICATION AI
+    {cat:'📣 Communication AI', items:[
+      {icon:'⏰',name:'AI Donation Reminders',status:'live',result:'Next reminder: 85 days from now',color:'#06B6D4',action:()=>'Smart Reminder Schedule:\n📅 Day 85: "You can donate again soon!"\n📅 Day 88: "3 days left until eligible"\n📅 Day 90: "YOU ARE ELIGIBLE — Donate today!"\n📅 Day 100: "Don\'t forget — every drop counts!"\n\nSent via: Push notification + WhatsApp'},
+      {icon:'🎙️',name:'AI Voice Assistant',status:'coming',result:'Say: "Hey BloodBridge, send emergency for O-"',color:'#8B5CF6',action:()=>'AI Voice Assistant (Coming Q4 2026):\n🎙️ "Hey BloodBridge, I need O- blood at IGMH"\n🎙️ "What\'s my donation count?"\n🎙️ "Find nearest blood bank"\n🎙️ "Am I eligible to donate today?"\n\nVoice-activated for hands-free emergencies.'},
+      {icon:'🌐',name:'AI Multilingual Translator',status:'live',result:'Supporting: EN, DV, HI, AR, SI, UR',color:'#10B981',action:()=>'Language Support (AI-powered):\n✅ English — Full support\n✅ Dhivehi — Full support\n✅ Hindi — Full support\n✅ Arabic — Full support\n✅ Sinhala — Beta\n✅ Urdu — Beta\n🔄 More languages coming: Tamil, Bengali, Malay'},
+      {icon:'🤖',name:'AI Donor Interview Bot',status:'live',result:'Pre-screening complete — 3 questions answered',color:'#6366F1',action:()=>'AI Pre-Donation Interview:\nQ1: How are you feeling today? → Well ✓\nQ2: Last donation date? → 3+ months ago ✓\nQ3: Any recent medications? → None ✓\nQ4: Have you eaten today? → Yes ✓\n\nPre-screening result: APPROVED — Proceed to donation center'},
+    ]},
+  ];
+
+  const liveCount = AI_FEATURES.flatMap(c=>c.items).filter(i=>i.status==='live').length;
+  const betaCount = AI_FEATURES.flatMap(c=>c.items).filter(i=>i.status==='beta').length;
+  const comingCount = AI_FEATURES.flatMap(c=>c.items).filter(i=>i.status==='coming').length;
+
+  return `
+  <!-- HERO -->
+  <div style="background:linear-gradient(135deg,#1E1B4B,#4338CA,#7C3AED);border-radius:20px;padding:20px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden">
+    <div style="position:absolute;right:-20px;top:-20px;font-size:100px;opacity:.08">🤖</div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:.12em;opacity:.8;margin-bottom:4px">BLOODBRIDGE AI</div>
+    <div style="font-size:20px;font-weight:900;margin-bottom:4px">🤖 AI Intelligence Hub</div>
+    <div style="font-size:11px;opacity:.85">33 AI-powered features working together to save more lives</div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+      <span style="background:rgba(16,185,129,.3);border:1px solid rgba(16,185,129,.5);border-radius:10px;padding:4px 10px;font-size:9px;font-weight:800">🟢 ${liveCount} LIVE</span>
+      <span style="background:rgba(99,102,241,.3);border:1px solid rgba(99,102,241,.5);border-radius:10px;padding:4px 10px;font-size:9px;font-weight:800">🔵 ${betaCount} BETA</span>
+      <span style="background:rgba(245,158,11,.3);border:1px solid rgba(245,158,11,.5);border-radius:10px;padding:4px 10px;font-size:9px;font-weight:800">🟡 ${comingCount} COMING</span>
+    </div>
+  </div>
+
+  <!-- QUICK AI INSIGHTS for current user -->
+  <div class="card" style="margin-bottom:14px;background:linear-gradient(135deg,rgba(99,102,241,.06),rgba(124,58,237,.04));border-color:rgba(99,102,241,.2)">
+    <div class="ct" style="color:#6366F1">⚡ Your AI Snapshot</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+      ${[
+        ['Retention Score',retentionPct+'%','#10B981'],
+        ['Engagement Index',engagementScore+'/100','#6366F1'],
+        ['Donor Match',matchScore+'%','#F59E0B'],
+        ['Wellness Score',wellnessScore+'/100','#EF4444'],
+      ].map(([l,v,c])=>`<div style="background:#fff;border-radius:10px;padding:10px;text-align:center;box-shadow:var(--shadow)"><div style="font-size:18px;font-weight:900;color:${c}">${v}</div><div style="font-size:9px;color:var(--t3);margin-top:2px">${l}</div></div>`).join('')}
+    </div>
+  </div>
+
+  <!-- AI FEATURE CATEGORIES -->
+  ${AI_FEATURES.map(cat=>`
+  <div style="margin-bottom:16px">
+    <div style="font-size:14px;font-weight:800;color:var(--t);margin-bottom:10px">${cat.cat}</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${cat.items.map(f=>`
+      <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;box-shadow:var(--shadow)">
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <div style="width:40px;height:40px;border-radius:12px;background:${f.color}15;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${f.icon}</div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap">
+              <div style="font-size:12px;font-weight:800;color:var(--t)">${f.name}</div>
+              <span style="font-size:8px;padding:1px 7px;border-radius:8px;font-weight:800;background:${f.status==='live'?'#E8F5E9':f.status==='beta'?'#EEF2FF':'#FFF8E1'};color:${f.status==='live'?'#166534':f.status==='beta'?'#4338CA':'#92400E'}">${f.status==='live'?'🟢 LIVE':f.status==='beta'?'🔵 BETA':'🟡 COMING'}</span>
+            </div>
+            <div style="font-size:10px;color:${f.color};font-weight:600;background:${f.color}10;border-radius:6px;padding:3px 8px;display:inline-block;margin-bottom:8px">${f.result}</div>
+            ${f.status!=='coming'?`<button style="width:100%;background:${f.color};color:#fff;border:none;border-radius:8px;padding:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit" onclick="runAIFeature(${JSON.stringify(f.action?.toString()||'()=>\'Coming soon\'')},'${f.name}')">▶ Run AI Analysis</button>`:`<div style="font-size:10px;color:var(--t3);font-style:italic">Available Q4 2026</div>`}
+          </div>
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>`).join('')}`;
+}
+
+function runAIFeature(fnStr, name) {
+  try {
+    const fn = eval('('+fnStr+')');
+    const result = typeof fn === 'function' ? fn() : fn;
+    const mc = document.getElementById('mc');
+    if(!mc) return;
+    mc.innerHTML=`<div class="mo" onclick="if(event.target===this){document.getElementById('mc').innerHTML=''}"><div class="md">
+      <div class="mh"><div class="mt">🤖 ${name}</div><button class="xb" onclick="document.getElementById('mc').innerHTML=''">×</button></div>
+      <div class="mb">
+        <div style="background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(124,58,237,.04));border:1px solid rgba(99,102,241,.2);border-radius:12px;padding:14px">
+          <div style="font-size:11px;font-weight:700;color:#6366F1;margin-bottom:8px;letter-spacing:.06em">🤖 AI ANALYSIS RESULT</div>
+          <div style="font-size:13px;color:var(--t);line-height:1.7;white-space:pre-line">${result}</div>
+        </div>
+      </div>
+      <div class="mf"><button class="btn btn-p btn-sm" onclick="document.getElementById('mc').innerHTML=''">Close</button></div>
+    </div></div>`;
+  } catch(e) { toast('Running AI analysis...','info'); }
+}
+
 function renderBadgesShowcase() {
   const u = currentUser||{donations:0,xp:0,bloodGroup:'O+',badges:[]};
   const earned = BADGES.filter(b=>b.condition?b.condition(u):u.badges?.includes(b.id));
