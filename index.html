@@ -650,7 +650,8 @@ function navigate(p){
     'verify':renderVerification, 'campaigns':renderCampaigns,
     'advanced':renderAdvancedFeatures, 'rank-cards':renderRankCards,
     'intl-network':renderIntlNetwork, 'hospital-dash':renderHospitalDash,
-    'blood-bank':renderBloodBankDash
+    'blood-bank':renderBloodBankDash, 'corporate':renderCorporate,
+    'university':renderUniversity, 'social':renderSocial, 'premium-card':renderPremiumCardPage
   };
   const fn=renders[p];
   document.getElementById('page').innerHTML=fn?fn():'<div class="empty"><div class="empty-icon">🔍</div><div>Page not found</div></div>';
@@ -777,6 +778,10 @@ function renderHome(){
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('intl-network');setbn('')">🌐 International Network</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('hospital-dash');setbn('')">🏥 Hospital Dashboard</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('blood-bank');setbn('')">🩸 Blood Bank</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('corporate');setbn('')">🏢 Corporate Program</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('university');setbn('')">🎓 University Program</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('social');setbn('')">👥 Social</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('premium-card');setbn('')">💳 My Donor Card</button>
   </div>
 
   <div class="sec-hdr"><div class="sec-title">🌟 Community</div><button class="sec-link" onclick="navigate('community')">See All</button></div>
@@ -3426,8 +3431,164 @@ function renderBloodBankDash() {
   </div>`;
 }
 
-function downloadPremiumCard() {
-  downloadPassportCert();
+function downloadPremiumCard() { downloadPassportCert(); }
+
+// ===== PREMIUM CARD PAGE =====
+function renderPremiumCardPage() {
+  const u = currentUser||{name:'Guest',bloodGroup:'O+',xp:0,donations:0,island:'',id:'GUEST'};
+  return `
+  <div style="font-size:15px;font-weight:800;color:var(--t);margin-bottom:12px">💳 My Donor Card</div>
+  ${renderPremiumCard(u)}
+  <div class="card" style="margin-top:12px">
+    <div class="ct">Card Styles</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${['💳 Credit Card (Current)','🎮 Hero Game Card','🪪 Passport Style','🍎 Apple Wallet Style','⚔️ Military Style','🏅 Lifesaver Card'].map((s,i)=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:${i===0?'rgba(229,57,53,.06)':'var(--s2)'};border:${i===0?'1px solid rgba(229,57,53,.3)':'1px solid var(--border)'};border-radius:10px">
+        <div style="font-size:13px;font-weight:600;color:var(--t)">${s}</div>
+        ${i===0?'<span style="font-size:9px;background:var(--red);color:#fff;padding:2px 8px;border-radius:8px;font-weight:700">ACTIVE</span>':'<button class="btn btn-ghost btn-sm" onclick="toast(\'Switching to '+s+' style...→ Download!\')")">Select</button>'}
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ===== CORPORATE PROGRAM =====
+function renderCorporate() {
+  const corps = [{name:'Maldives Business Council',employees:45,donations:128,level:'Gold CSR',badge:'🥇'},{name:'Villa Group',employees:12,donations:34,level:'Silver CSR',badge:'🥈'},{name:'Ooredoo Maldives',employees:8,donations:19,level:'Bronze CSR',badge:'🥉'}];
+  return `
+  <div style="background:linear-gradient(135deg,#1A237E,#283593);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">BUSINESS PORTAL</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">Corporate Donor Program</div>
+    <div style="font-size:11px;opacity:.85">Empower your team to save lives and build CSR impact</div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">🏢 How Corporate Program Works</div>
+    ${[['1️⃣','Register Your Company','Sign up your company and create a team profile in minutes'],['2️⃣','Invite Employees','Send invites to your team — they join under your company'],['3️⃣','Run Donation Drives','Schedule drives, set goals, track progress in real-time'],['4️⃣','Get CSR Reports','Monthly reports of team donations, lives saved, and impact score'],['5️⃣','Earn Recognition','Companies with 50+ donations get the Corporate Hero award'],].map(([s,t,d])=>`
+    <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="font-size:20px;flex-shrink:0">${s}</div>
+      <div><div style="font-size:13px;font-weight:700;color:var(--t)">${t}</div><div style="font-size:11px;color:var(--t3);margin-top:1px">${d}</div></div>
+    </div>`).join('')}
+    <button class="btn btn-red" style="margin-top:12px" onclick="toast('Company registration form sent to your email!','success')">🏢 Register Your Company</button>
+  </div>
+
+  <!-- CORPORATE LEADERBOARD -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">🏆 Corporate Leaderboard</div>
+    ${corps.map((c,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--s2);border-radius:12px;margin-bottom:6px">
+      <div style="font-size:24px">${c.badge}</div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:700">${c.name}</div><div style="font-size:10px;color:var(--t3)">${c.employees} employees · ${c.donations} donations</div></div>
+      <div style="text-align:right"><div style="font-size:11px;font-weight:700;color:var(--blue)">${c.level}</div></div>
+    </div>`).join('')}
+  </div>
+
+  <!-- CSR REPORTS PREVIEW -->
+  <div class="card">
+    <div class="ct">📊 CSR Impact Dashboard</div>
+    <div class="g2">
+      ${[['Team Donations','0','This Month'],['Lives Saved','0','Estimated'],['Team Members','0','Registered'],['CSR Score','0/100','Current']].map(([l,v,s])=>`<div style="background:var(--s2);border-radius:10px;padding:12px;text-align:center"><div style="font-size:10px;color:var(--t3);margin-bottom:4px">${l}</div><div style="font-size:22px;font-weight:900;color:var(--t)">${v}</div><div style="font-size:9px;color:var(--t3)">${s}</div></div>`).join('')}
+    </div>
+    <button class="btn btn-ghost" style="margin-top:10px" onclick="toast('Download CSR report as PDF!','success')">📄 Download CSR Report</button>
+  </div>`;
+}
+
+// ===== UNIVERSITY PROGRAM =====
+function renderUniversity() {
+  const unis = [{name:'Maldives National University',students:89,donations:234,rank:1},{name:'Villa College',students:34,donations:98,rank:2},{name:'Cyryx College',students:22,donations:56,rank:3}];
+  return `
+  <div style="background:linear-gradient(135deg,#1B5E20,#388E3C);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">EDUCATION PORTAL</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">University Donor Program</div>
+    <div style="font-size:11px;opacity:.85">Building the next generation of blood donors on campus</div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">🎓 Program Benefits</div>
+    ${['🏅 Exclusive student donor certificates','📊 University blood donation leaderboard','⛺ Campus donation drive support','🎁 Student achievement badges','🌟 Scholarship recommendations for top donors','📱 Student donor passport'].map(b=>`<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--t)">${b}</div>`).join('')}
+    <button class="btn btn-red" style="margin-top:10px" onclick="toast('University registration submitted!','success')">🎓 Register Your University</button>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">🏆 University Rankings</div>
+    ${unis.map((u,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--s2);border-radius:10px;margin-bottom:6px">
+      <div style="width:30px;height:30px;border-radius:50%;background:${i===0?'linear-gradient(135deg,#D4AF37,#B8860B)':i===1?'linear-gradient(135deg,#9CA3AF,#6B7280)':'linear-gradient(135deg,#CD7F32,#8B4513)'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;flex-shrink:0">${u.rank}</div>
+      <div style="flex:1"><div style="font-size:12px;font-weight:700">${u.name}</div><div style="font-size:10px;color:var(--t3)">${u.students} students · ${u.donations} donations</div></div>
+    </div>`).join('')}
+  </div>
+
+  <div class="card">
+    <div class="ct">📅 Campus Drives</div>
+    ${[{title:'MNU Campus Drive',date:'Jun 15',location:'MNU Campus, Malé',slots:100},{title:'Villa College Drive',date:'Jun 22',location:'Villa College, Malé',slots:50}].map(d=>`
+    <div style="background:var(--s2);border-radius:10px;padding:12px;margin-bottom:8px">
+      <div style="font-size:13px;font-weight:700">${d.title}</div>
+      <div style="font-size:10px;color:var(--t3);margin-top:2px">📅 ${d.date} · 📍 ${d.location} · ${d.slots} slots</div>
+      <button class="btn btn-red btn-sm" style="margin-top:8px;width:100%" onclick="toast('Registered for ${d.title}! +25 XP','success')">Register</button>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ===== SOCIAL FEATURES =====
+function renderSocial() {
+  const groups = [{name:'O- Blood Warriors',members:234,flag:'🌍'},{name:'Maldives Donors',members:89,flag:'🇲🇻'},{name:'India BloodBridge',members:1247,flag:'🇮🇳'},{name:'Emergency Responders',members:456,flag:'🚨'}];
+  const challenges = [{title:'Save 10 Lives',progress:7,goal:10,emoji:'❤️',xp:500},{title:'Donate Twice This Year',progress:1,goal:2,emoji:'🩸',xp:250},{title:'Refer 5 Friends',progress:2,goal:5,emoji:'👥',xp:300}];
+  return `
+  <div style="font-size:15px;font-weight:800;color:var(--t);margin-bottom:12px">👥 Social Features</div>
+
+  <!-- TABS -->
+  <div class="chip-row" style="margin-bottom:12px">
+    <div class="chip active">Stories</div>
+    <div class="chip" onclick="toast('Thank-you Wall loading...','info')">Thank-You Wall</div>
+    <div class="chip" onclick="toast('Groups loading...','info')">Groups</div>
+    <div class="chip" onclick="toast('Challenges loading...','info')">Challenges</div>
+  </div>
+
+  <!-- STORY FEED -->
+  ${[{av:'A',name:'Ahmed Jinaah',bg:'O+',text:'🎉 Just completed my 30th donation! The feeling of knowing I\'ve potentially saved 81 lives is incredible. Keep donating heroes! 🩸',likes:89,time:'2h ago',country:'🇲🇻'},{av:'F',name:'Fatima Hassan',bg:'B-',text:'Today a hospital called to say my B- blood saved a mother during emergency surgery. I cried happy tears 😭❤️ This is why I donate.',likes:234,time:'5h ago',country:'🇲🇻'},{av:'R',name:'Rahul Kumar',bg:'O+',text:'Organized our company\'s first blood drive — 45 units collected! Our CSR team is so proud. @BloodBridge made it so easy 🏥',likes:67,time:'1d ago',country:'🇮🇳'}].map(s=>`
+  <div class="feed-card" style="margin-bottom:10px">
+    <div class="feed-header">
+      <div class="feed-av">${s.av}</div>
+      <div style="flex:1"><div class="feed-name">${s.country} ${s.name}</div><div class="feed-time">${s.time}</div></div>
+      <span style="background:rgba(229,57,53,.1);color:var(--red);font-size:11px;font-weight:900;padding:2px 8px;border-radius:8px">${s.bg}</span>
+    </div>
+    <div class="feed-text">${s.text}</div>
+    <div class="feed-actions">
+      <button class="feed-btn" onclick="this.textContent='❤️ '+(parseInt(this.textContent.replace('❤️ ',''))+1);this.classList.add('liked')">❤️ ${s.likes}</button>
+      <button class="feed-btn">💬 Comment</button>
+      <button class="feed-btn">🔗 Share</button>
+    </div>
+  </div>`).join('')}
+
+  <!-- GROUPS -->
+  <div class="ct" style="margin-top:8px">👥 Donor Groups</div>
+  ${groups.map(g=>`
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--s2);border-radius:12px;margin-bottom:6px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="font-size:24px">${g.flag}</div>
+      <div><div style="font-size:13px;font-weight:700">${g.name}</div><div style="font-size:10px;color:var(--t3)">${g.members.toLocaleString()} members</div></div>
+    </div>
+    <button class="btn btn-red btn-sm" onclick="toast('Joined ${g.name}! 🎉','success')">Join</button>
+  </div>`).join('')}
+
+  <!-- CHALLENGES -->
+  <div class="ct" style="margin-top:8px">⚡ Active Challenges</div>
+  ${challenges.map(c=>`
+  <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px;box-shadow:var(--shadow)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:20px">${c.emoji}</span>
+        <div style="font-size:13px;font-weight:700;color:var(--t)">${c.title}</div>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:var(--gold)">+${c.xp} XP</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--t3);margin-bottom:4px">
+      <span>${c.progress}/${c.goal}</span><span>${Math.round(c.progress/c.goal*100)}%</span>
+    </div>
+    <div style="height:5px;background:var(--s3);border-radius:3px;overflow:hidden">
+      <div style="height:100%;width:${c.progress/c.goal*100}%;background:var(--red);border-radius:3px"></div>
+    </div>
+  </div>`).join('')}`;
 }
 
 // ===== GLOBAL MAP =====
