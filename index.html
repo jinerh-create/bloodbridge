@@ -636,11 +636,13 @@ function navigate(p){
     hospital:renderHospital, admin:renderAdmin,
     'donate-form':renderDonateForm, 'rare-registry':renderRareRegistry,
     'intl-search':renderIntlSearch, 'rare-management':renderRareManagement,
-    'donor-passport':renderDonorPassport, 'global-analytics':renderGlobalAnalytics
+    'donor-passport':renderDonorPassport, 'global-analytics':renderGlobalAnalytics,
+    'ai-matching':renderAIMatchingPage, 'global-map':renderGlobalMap
   };
   const fn=renders[p];
   document.getElementById('page').innerHTML=fn?fn():'<div class="empty"><div class="empty-icon">🔍</div><div>Page not found</div></div>';
   if(p==='map') setTimeout(initMap,100);
+  if(p==='global-map') setTimeout(initGlobalMap,100);
   if(p==='home'&&currentUser?.role==='hospital') document.getElementById('page').innerHTML=renderHospital();
   if(p==='home'&&currentUser?.role==='admin') document.getElementById('page').innerHTML=renderAdmin();
   window.scrollTo(0,0);
@@ -739,6 +741,8 @@ function renderHome(){
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('intl-search');setbn('')">🌍 Intl. Donor Search</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('global-analytics');setbn('')">📊 Global Analytics</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('rare-management');setbn('')">🔬 Rare Blood Mgmt</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('ai-matching');setbn('')">🤖 AI Emergency Matching</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('global-map');setbn('map')">🗺️ Global Map</button>
   </div>
 
   <div class="sec-hdr"><div class="sec-title">🌟 Community</div><button class="sec-link" onclick="navigate('community')">See All</button></div>
@@ -1302,12 +1306,22 @@ function submitEmergency(){
     statusEl.innerHTML+=`<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--t2);margin-bottom:6px;animation:toastIn .3s ease"><span>${s.icon}</span><span>${s.msg}</span></div>`;
   },s.t));
 
+  // Show AI matches while sending
+  setTimeout(()=>{
+    const aiDiv = document.createElement('div');
+    aiDiv.id='ai-match-result';
+    aiDiv.style.cssText='margin-top:12px';
+    aiDiv.innerHTML = renderAIMatches(bg);
+    const statusEl2 = document.getElementById('alert-status');
+    if(statusEl2) statusEl2.appendChild(aiDiv);
+  }, 2800);
+
   setTimeout(()=>{
     closeEmer();
     toast(`🚨 ${nearbyDonors} donors alerted for ${bg} blood!`,'success');
-    setTimeout(()=>toast(`📲 WhatsApp & SMS sent to all nearby donors`,'info'),1200);
+    setTimeout(()=>toast(`🤖 AI found best matches — check notifications`,'info'),1200);
     setTimeout(()=>toast(`⏱ First response expected in ~8 minutes`,'info'),2400);
-  },4200);
+  },5000);
 }
 function respondRequest(id){
   const r=requests.find(x=>x.id===id);
@@ -1931,6 +1945,204 @@ function renderGlobalAnalytics() {
   </div>`;
 }
 
+// ===== AI EMERGENCY MATCHING =====
+function renderAIMatches(bloodGroup) {
+  const compatible = {
+    'O-': ['O-'],
+    'O+': ['O-','O+'],
+    'A-': ['O-','A-'],
+    'A+': ['O-','O+','A-','A+'],
+    'B-': ['O-','B-'],
+    'B+': ['O-','O+','B-','B+'],
+    'AB-': ['O-','A-','B-','AB-'],
+    'AB+': ['O-','O+','A-','A+','B-','B+','AB-','AB+'],
+  };
+  const compatibleGroups = compatible[bloodGroup] || [bloodGroup];
+
+  // Simulate AI-scored donors
+  const pool = [
+    ...donors.map(d=>({...d, dist:+(Math.random()*5+0.5).toFixed(1), eta:Math.floor(Math.random()*20+5), score:Math.floor(Math.random()*30+70)})),
+    {id:'ai1',name:'Ahmed Ali',bloodGroup:'O+',island:'Malé',dist:0.8,eta:6,score:98,available:true},
+    {id:'ai2',name:'Fatima Hassan',bloodGroup:'O-',island:'Malé',dist:1.2,eta:9,score:95,available:true},
+    {id:'ai3',name:'Ibrahim Rasheed',bloodGroup:'A+',island:'Hulhumalé',dist:2.4,eta:14,score:88,available:true},
+    {id:'ai4',name:'Mariyam Ali',bloodGroup:'B+',island:'Malé',dist:1.8,eta:11,score:91,available:true},
+    {id:'ai5',name:'Hassan Shareef',bloodGroup:'O+',island:'Malé',dist:0.5,eta:4,score:96,available:false},
+  ].filter(d=>compatibleGroups.includes(d.bloodGroup)&&d.available!==false);
+
+  if(!pool.length) return '';
+
+  const nearest = [...pool].sort((a,b)=>a.dist-b.dist)[0];
+  const fastest = [...pool].sort((a,b)=>a.eta-b.eta)[0];
+  const best = [...pool].sort((a,b)=>b.score-a.score)[0];
+  const available = pool.filter(d=>d.available!==false)[0];
+
+  const matches = [
+    {label:'📍 Nearest',icon:'📍',color:'#2196F3',donor:nearest,detail:`${nearest.dist}km away`},
+    {label:'⚡ Fastest',icon:'⚡',color:'#FF9800',donor:fastest,detail:`~${fastest.eta} min ETA`},
+    {label:'🤖 Best Match',icon:'🤖',color:'#9C27B0',donor:best,detail:`${best.score}% match score`},
+    {label:'✅ Available Now',icon:'✅',color:'#4CAF50',donor:available,detail:`Ready to donate`},
+  ];
+
+  return `
+  <div style="margin-top:16px">
+    <div style="font-size:12px;font-weight:800;color:#fff;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+      <span style="background:rgba(255,255,255,.2);border-radius:6px;padding:2px 8px;font-size:10px">🤖 AI</span>
+      Best Matches for ${bloodGroup}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      ${matches.map(m=>`
+      <div style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:10px;backdrop-filter:blur(4px)">
+        <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,.7);letter-spacing:.06em;margin-bottom:6px;text-transform:uppercase">${m.label}</div>
+        <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:2px">${m.donor.name}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.7);margin-bottom:6px">${m.donor.bloodGroup} · ${m.donor.island||'Malé'}</div>
+        <div style="font-size:9px;font-weight:700;color:${m.color};background:rgba(255,255,255,.1);border-radius:6px;padding:2px 6px;display:inline-block;margin-bottom:6px">${m.detail}</div>
+        <button style="width:100%;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:5px;font-size:10px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit" onclick="toast('Contacting ${m.donor.name}...','info');setTimeout(()=>toast('✓ ${m.donor.name} has been notified!','success'),1200)">Contact →</button>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ===== AI MATCHING PAGE =====
+function renderAIMatchingPage() {
+  const BGs = ['A+','A-','B+','B-','O+','O-','AB+','AB-'];
+  return `
+  <div style="background:linear-gradient(135deg,var(--red),var(--reddark));border-radius:20px;padding:20px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden">
+    <div style="position:absolute;right:-10px;top:-10px;font-size:80px;opacity:.1">🤖</div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">BLOODBRIDGE AI</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:4px">AI Emergency Matching</div>
+    <div style="font-size:12px;opacity:.85;line-height:1.5">Instantly finds the nearest, fastest, best-matched and available donor for any blood group</div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <div class="ct">🔍 Find Best Donors</div>
+    <div style="margin-bottom:12px">
+      <label>Select Blood Group Needed</label>
+      <div class="blood-select" id="ai-bg-sel">
+        ${BGs.map((b,i)=>`<div style="padding:10px 4px;border:1px solid var(--border);border-radius:10px;text-align:center;cursor:pointer;font-size:13px;font-weight:700;color:var(--t3);background:var(--s2);transition:all .15s${i===4?';background:var(--red);border-color:var(--red);color:#fff':''}" onclick="runAIMatch('${b}',this)">${b}</div>`).join('')}
+      </div>
+    </div>
+    <button class="btn btn-red" id="ai-match-btn">🤖 Find Best Donors Now</button>
+  </div>
+
+  <div id="ai-results">
+    ${renderAIMatchGrid('O+')}
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <div class="ct">🤖 How AI Matching Works</div>
+    ${[
+      ['📍','Nearest Donor','Uses GPS to find donors within walking/driving distance'],
+      ['⚡','Fastest Response','Analyzes donor response history and current location'],
+      ['🏆','Best Match','Considers blood type compatibility, health score, and reliability'],
+      ['✅','Available Now','Only contacts donors who are currently eligible and available'],
+    ].map(([i,t,d])=>`<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:20px;flex-shrink:0">${i}</span>
+      <div><div style="font-size:12px;font-weight:700;color:var(--t)">${t}</div><div style="font-size:11px;color:var(--t3);margin-top:1px">${d}</div></div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function renderAIMatchGrid(bg) {
+  const compatible = {'O-':['O-'],'O+':['O-','O+'],'A-':['O-','A-'],'A+':['O-','O+','A-','A+'],'B-':['O-','B-'],'B+':['O-','O+','B-','B+'],'AB-':['O-','A-','B-','AB-'],'AB+':['O-','O+','A-','A+','B-','B+','AB-','AB+']};
+  const groups = compatible[bg]||[bg];
+  const pool = [
+    {id:'m1',name:'Ahmed Ali',bloodGroup:'O+',island:'Malé',dist:0.8,eta:6,score:98,donations:18},
+    {id:'m2',name:'Fatima Hassan',bloodGroup:'O-',island:'Malé',dist:1.2,eta:9,score:95,donations:12},
+    {id:'m3',name:'Ibrahim Rasheed',bloodGroup:'A+',island:'Hulhumalé',dist:2.4,eta:14,score:88,donations:8},
+    {id:'m4',name:'Mariyam Ali',bloodGroup:'B+',island:'Malé',dist:1.8,eta:11,score:91,donations:10},
+    {id:'m5',name:'Hassan Ahmed',bloodGroup:'O+',island:'Malé',dist:3.1,eta:18,score:85,donations:6},
+    ...donors.map((d,i)=>({...d,dist:+(i*0.7+0.6).toFixed(1),eta:Math.floor(i*3+5),score:Math.floor(85+Math.random()*15)})),
+  ].filter(d=>groups.includes(d.bloodGroup));
+
+  if(!pool.length) return `<div class="empty"><div class="empty-icon">🔍</div><div>No compatible donors found</div></div>`;
+
+  const nearest=[...pool].sort((a,b)=>a.dist-b.dist)[0];
+  const fastest=[...pool].sort((a,b)=>a.eta-b.eta)[0];
+  const best=[...pool].sort((a,b)=>b.score-a.score)[0];
+  const byDon=[...pool].sort((a,b)=>(b.donations||0)-(a.donations||0))[0];
+
+  const cards=[
+    {label:'📍 Nearest Donor',donor:nearest,stat:`${nearest.dist}km away`,color:'#2196F3'},
+    {label:'⚡ Fastest Response',donor:fastest,stat:`~${fastest.eta} min ETA`,color:'#FF9800'},
+    {label:'🤖 AI Best Match',donor:best,stat:`${best.score}% match`,color:'#9C27B0'},
+    {label:'✅ Most Experienced',donor:byDon,stat:`${byDon.donations||0} donations`,color:'#4CAF50'},
+  ];
+
+  return `
+  <div style="font-size:13px;font-weight:800;color:var(--t);margin-bottom:10px">AI Results for ${bg}</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    ${cards.map(c=>`<div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;box-shadow:var(--shadow);border-top:3px solid ${c.color}">
+      <div style="font-size:10px;font-weight:800;color:${c.color};margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">${c.label}</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div style="width:36px;height:36px;border-radius:50%;background:${c.color}20;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:${c.color};flex-shrink:0">${c.donor.bloodGroup}</div>
+        <div><div style="font-size:12px;font-weight:700;color:var(--t)">${c.donor.name}</div><div style="font-size:10px;color:var(--t3)">${c.donor.island||'Malé'}</div></div>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:${c.color};background:${c.color}12;border-radius:8px;padding:4px 8px;margin-bottom:8px;text-align:center">${c.stat}</div>
+      <button style="width:100%;background:${c.color};color:#fff;border:none;border-radius:8px;padding:7px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit" onclick="toast('Contacting ${c.donor.name}!','success')">📲 Contact</button>
+    </div>`).join('')}
+  </div>`;
+}
+
+function runAIMatch(bg, el) {
+  document.querySelectorAll('#ai-bg-sel > div').forEach(d=>{d.style.background='var(--s2)';d.style.borderColor='var(--border)';d.style.color='var(--t3)';});
+  el.style.background='var(--red)';el.style.borderColor='var(--red)';el.style.color='#fff';
+  const res=document.getElementById('ai-results');
+  if(res){
+    res.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3)">🤖 AI analyzing donors...</div>';
+    setTimeout(()=>{ res.innerHTML=renderAIMatchGrid(bg); },800);
+  }
+}
+
+// ===== GLOBAL MAP =====
+let globalMapInst = null;
+function renderGlobalMap() {
+  return `
+  <div style="font-size:15px;font-weight:800;color:var(--t);margin-bottom:8px">🗺️ Global Donor Map</div>
+  <div class="chip-row">
+    <div class="chip active" id="gm-all">All</div>
+    <div class="chip" id="gm-donors">🩸 Donors</div>
+    <div class="chip" id="gm-hospitals">🏥 Hospitals</div>
+    <div class="chip" id="gm-camps">⛺ Camps</div>
+    <div class="chip" id="gm-emergency">🚨 Emergency</div>
+  </div>
+  <div id="global-map-el" style="height:380px;border-radius:14px;overflow:hidden;border:1px solid var(--border);margin-bottom:12px"></div>
+  <div class="g2">
+    <div class="stat-card"><div class="sl">🩸 Active Donors</div><div class="sv" style="font-size:20px">${donors.length + 38}</div></div>
+    <div class="stat-card"><div class="sl">🏥 Blood Banks</div><div class="sv" style="font-size:20px">${hospitals.length + 12}</div></div>
+    <div class="stat-card"><div class="sl">🚨 Active Requests</div><div class="sv" style="font-size:20px;color:var(--red)">${requests.filter(r=>r.status==='active').length + 3}</div></div>
+    <div class="stat-card"><div class="sl">⛺ Donation Camps</div><div class="sv" style="font-size:20px">3</div></div>
+  </div>`;
+}
+
+function initGlobalMap() {
+  const el = document.getElementById('global-map-el');
+  if(!el || !window.L) return;
+  if(globalMapInst) { try{globalMapInst.remove();}catch(e){} globalMapInst=null; }
+  globalMapInst = L.map('global-map-el',{center:[4.1748,73.5093],zoom:6});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:'© CartoDB'}).addTo(globalMapInst);
+
+  // Donor markers
+  const donorIcon = L.divIcon({html:'<div style="background:#E53935;width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 6px rgba(229,57,53,.5)"></div>',className:'',iconSize:[12,12]});
+  const hospitalIcon = L.divIcon({html:'<div style="background:#2196F3;width:14px;height:14px;border-radius:4px;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:8px">🏥</div>',className:'',iconSize:[14,14]});
+  const emergencyIcon = L.divIcon({html:'<div style="background:#FF9800;width:14px;height:14px;border-radius:50%;border:2px solid #fff;animation:pulse 1s infinite;box-shadow:0 0 8px rgba(255,152,0,.6)"></div>',className:'',iconSize:[14,14]});
+
+  // Add registered donors
+  donors.forEach(d=>{ if(d.lat&&d.lng) L.marker([d.lat,d.lng],{icon:donorIcon}).addTo(globalMapInst).bindPopup(`<b>${d.name}</b><br>${d.bloodGroup} · ${d.island||'Maldives'}`); });
+
+  // Add demo donors across Maldives
+  const demoLocations = [[4.175,73.509],[4.185,73.515],[4.168,73.502],[3.34,72.99],[1.85,73.42],[0.68,73.17],[6.62,73.07],[-0.61,73.15],[1.33,173.02]];
+  demoLocations.forEach((loc,i)=>L.marker(loc,{icon:donorIcon}).addTo(globalMapInst).bindPopup(`<b>Donor ${i+1}</b><br>Available`));
+
+  // Hospitals
+  hospitals.forEach(h=>L.marker([h.lat,h.lng],{icon:hospitalIcon}).addTo(globalMapInst).bindPopup(`<b>${h.name}</b><br>${h.island}`));
+
+  // Emergency requests
+  requests.filter(r=>r.status==='active').forEach(r=>{ if(r.lat&&r.lng) L.marker([r.lat,r.lng],{icon:emergencyIcon}).addTo(globalMapInst).bindPopup(`<b>🚨 ${r.bloodGroup} needed</b><br>${r.hospital}`); });
+
+  // Donation camps
+  [[4.178,73.512],[3.341,72.995]].forEach((loc,i)=>L.marker(loc,L.divIcon({html:'<div style="background:#4CAF50;width:14px;height:14px;border-radius:50%;border:2px solid #fff;font-size:8px;display:flex;align-items:center;justify-content:center">⛺</div>',className:'',iconSize:[14,14]})).addTo(globalMapInst).bindPopup(`Donation Camp ${i+1}`));
+}
+
 function alertRareDonors(type) {
   const donors = RARE_DEMO_DONORS.filter(d=>d.type===type&&d.available);
   toast(`🚨 Alert sent to ${donors.length} ${type} donors!`,'success');
@@ -1949,6 +2161,14 @@ setTimeout(()=>{
   document.getElementById('splash').classList.add('hide');
   if(currentUser){showApp();}
   else{document.getElementById('auth-screen').style.display='flex';}
+  // AI match button
+  document.addEventListener('click', function(e) {
+    if(e.target.id==='ai-match-btn') {
+      const sel=document.querySelector('#ai-bg-sel div[style*="background:var(--red)"]');
+      const bg=sel?sel.textContent.trim():'O+';
+      runAIMatch(bg,sel||e.target);
+    }
+  });
   // Auth button listeners (CSP-safe, no inline onclick)
   document.getElementById('btn-login')?.addEventListener('click', doLogin);
   document.getElementById('btn-register')?.addEventListener('click', doRegister);
