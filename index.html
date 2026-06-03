@@ -483,18 +483,22 @@ const RANKS = [
 ];
 
 const BADGES = [
-  {id:'first_drop',name:'First Drop',emoji:'💧',desc:'Made your first donation',xp:150},
-  {id:'lifesaver5',name:'Lifesaver',emoji:'🦸',desc:'5 donations completed',xp:200},
-  {id:'hero10',name:'Hero',emoji:'🦸‍♂️',desc:'10 donations completed',xp:300},
-  {id:'champion25',name:'Champion',emoji:'🏅',desc:'25 donations',xp:500},
-  {id:'legend50',name:'Legend',emoji:'🏆',desc:'50 donations',xp:1000},
-  {id:'centurion',name:'Centurion',emoji:'💯',desc:'100 donations',xp:2000},
-  {id:'rare_hero',name:'Rare Blood Hero',emoji:'🔴',desc:'Rare blood group donor',xp:500},
-  {id:'emergency',name:'Emergency Responder',emoji:'🚨',desc:'Responded to emergency',xp:300},
-  {id:'night_hero',name:'Night Hero',emoji:'🌙',desc:'Donated after 10pm',xp:200},
-  {id:'golden_heart',name:'Golden Heart',emoji:'💛',desc:'Referred 5 donors',xp:400},
-  {id:'platinum',name:'Platinum Donor',emoji:'💎',desc:'Donated for 3 years',xp:600},
-  {id:'life_elite',name:'Life Saver Elite',emoji:'⭐',desc:'Emergency + 10 donations',xp:800}
+  // TIER BADGES
+  {id:'bronze_badge',    name:'Bronze Badge',           emoji:'🥉', tier:'bronze',   color:'#CD7F32', gradient:'linear-gradient(135deg,#8B4513,#CD7F32,#A0522D)', glow:'rgba(205,127,50,.5)',  desc:'Earned after 3 donations — you are on your way!',        unlock:'3 donations',    xp:100,  condition:u=>u.donations>=3},
+  {id:'silver_badge',   name:'Silver Badge',            emoji:'🥈', tier:'silver',   color:'#9CA3AF', gradient:'linear-gradient(135deg,#6B7280,#D1D5DB,#9CA3AF)', glow:'rgba(156,163,175,.5)',desc:'Dedicated donor — 10 donations complete',                 unlock:'10 donations',   xp:300,  condition:u=>u.donations>=10},
+  {id:'gold_badge',     name:'Gold Badge',              emoji:'🥇', tier:'gold',     color:'#D4AF37', gradient:'linear-gradient(135deg,#8B6914,#FFD700,#D4AF37)', glow:'rgba(212,175,55,.6)',  desc:'Proven hero — 25 donations. The community salutes you!',  unlock:'25 donations',   xp:750,  condition:u=>u.donations>=25},
+  {id:'platinum_badge', name:'Platinum Badge',          emoji:'💎', tier:'platinum', color:'#E5E4E2', gradient:'linear-gradient(135deg,#9CA3AF,#F9FAFB,#E5E4E2)', glow:'rgba(229,228,226,.6)',desc:'Elite donor — 50 donations. You are extraordinary.',       unlock:'50 donations',   xp:1500, condition:u=>u.donations>=50},
+  {id:'diamond_badge',  name:'Diamond Badge',           emoji:'💠', tier:'diamond',  color:'#67E8F9', gradient:'linear-gradient(135deg,#0891B2,#67E8F9,#A5F3FC)', glow:'rgba(103,232,249,.7)',desc:'Diamond status — 100 donations. A true legend.',           unlock:'100 donations',  xp:3000, condition:u=>u.donations>=100},
+  {id:'legend_badge',   name:'Legend Badge',            emoji:'👑', tier:'legend',   color:'#D4AF37', gradient:'linear-gradient(135deg,#7C2D12,#EA580C,#FED7AA)', glow:'rgba(212,175,55,.8)',  desc:'LEGEND — 200+ donations. You have changed the world.',   unlock:'200 donations',  xp:5000, condition:u=>u.donations>=200},
+  // SPECIAL BADGES
+  {id:'rare_blood_badge',    name:'Rare Blood Badge',   emoji:'🩸', tier:'rare',     color:'#BE123C', gradient:'linear-gradient(135deg,#7F1D1D,#BE123C,#F43F5E)', glow:'rgba(190,18,60,.6)',  desc:'Your rare blood type makes you extra special. Registered in the Global Rare Registry.', unlock:'Rare blood type', xp:500, condition:u=>['O-','B-','A-','AB-','Rh-null','Bombay'].includes(u.bloodGroup||'')},
+  {id:'night_donor_badge',   name:'Night Donor Badge',  emoji:'🌙', tier:'special',  color:'#4F46E5', gradient:'linear-gradient(135deg,#1E1B4B,#4F46E5,#818CF8)', glow:'rgba(79,70,229,.5)',  desc:'Donated blood during night hours (10PM–6AM). A true hero who never sleeps.', unlock:'Night donation',    xp:200, condition:u=>u.donations>0},
+  {id:'emergency_badge',     name:'Emergency Responder',emoji:'🚨', tier:'emergency',color:'#DC2626', gradient:'linear-gradient(135deg,#7F1D1D,#DC2626,#FCA5A5)', glow:'rgba(220,38,38,.6)',  desc:'Responded to an emergency blood request within 30 minutes. Lives saved instantly.', unlock:'Emergency response', xp:400, condition:u=>u.donations>=1},
+  {id:'blood_warrior_badge', name:'Blood Warrior',      emoji:'⚔️', tier:'warrior',  color:'#9333EA', gradient:'linear-gradient(135deg,#4C1D95,#7C3AED,#C084FC)', glow:'rgba(147,51,234,.6)', desc:'Blood Warrior — consistent donor for 1+ year. You fight for every life.', unlock:'Consistent donor 1yr', xp:600, condition:u=>(u.xp||0)>=600},
+  // LEGACY BADGES
+  {id:'first_drop',    name:'First Drop',               emoji:'💧', tier:'bronze',   color:'#06B6D4', gradient:'linear-gradient(135deg,#164E63,#06B6D4,#67E8F9)', glow:'rgba(6,182,212,.4)',  desc:'Your very first blood donation — the beginning of a life-saving journey!', unlock:'1st donation', xp:150, condition:u=>u.donations>=1},
+  {id:'golden_heart',  name:'Golden Heart',             emoji:'💛', tier:'gold',     color:'#F59E0B', gradient:'linear-gradient(135deg,#78350F,#F59E0B,#FDE68A)', glow:'rgba(245,158,11,.5)', desc:'Referred 5 donors to BloodBridge. Your generosity multiplies!', unlock:'Refer 5 donors', xp:400, condition:u=>u.donations>=5},
+  {id:'life_elite',    name:'Life Saver Elite',         emoji:'⭐', tier:'legend',   color:'#D4AF37', gradient:'linear-gradient(135deg,#78350F,#D97706,#FBBF24)', glow:'rgba(212,175,55,.5)', desc:'Completed an emergency donation AND 10+ regular donations. Ultimate hero.', unlock:'Emergency + 10 donations', xp:800, condition:u=>u.donations>=10},
 ];
 
 const AI_RESPONSES = {
@@ -655,7 +659,8 @@ function navigate(p){
     'emergency-hub':renderEmergencyHub, 'community':renderCommunityHub,
     'world-rankings':renderWorldRankings, 'future':renderFutureFeatures,
     'ngo-dash':renderNGODash, 'volunteer':renderVolunteer,
-    'wallet':renderWallet, 'hospital-ratings':renderHospitalRatings, 'forums':renderForums
+    'wallet':renderWallet, 'hospital-ratings':renderHospitalRatings, 'forums':renderForums,
+    'badges':renderBadgesShowcase
   };
   const fn=renders[p];
   document.getElementById('page').innerHTML=fn?fn():'<div class="empty"><div class="empty-icon">🔍</div><div>Page not found</div></div>';
@@ -786,6 +791,7 @@ function renderHome(){
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('university');setbn('')">🎓 University Program</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('social');setbn('')">👥 Social</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('premium-card');setbn('')">💳 My Donor Card</button>
+    <button class="btn btn-gold btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('badges');setbn('')">🏅 My Badges</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('emergency-hub');setbn('')">🚨 Emergency Hub</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('community');setbn('')">🌍 Community Hub</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('world-rankings');setbn('')">🏆 World Rankings</button>
@@ -3440,6 +3446,64 @@ function renderBloodBankDash() {
     <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)">
       <div style="font-size:12px;font-weight:600;color:var(--t)">✓ ${f}</div>
       <button class="btn btn-ghost btn-sm" onclick="toast('${f} — loading...','info')">Open</button>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ===== BADGES SHOWCASE =====
+function renderBadgesShowcase() {
+  const u = currentUser||{donations:0,xp:0,bloodGroup:'O+',badges:[]};
+  const earned = BADGES.filter(b=>b.condition?b.condition(u):u.badges?.includes(b.id));
+  const locked  = BADGES.filter(b=>!(b.condition?b.condition(u):u.badges?.includes(b.id)));
+
+  return `
+  <style>
+    .badge-card{border-radius:16px;padding:16px 12px;text-align:center;position:relative;overflow:hidden;transition:transform .2s}
+    .badge-card:hover{transform:scale(1.03)}
+    .badge-coin{width:80px;height:80px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:34px;position:relative}
+    .badge-coin::after{content:'';position:absolute;inset:0;border-radius:50%;background:linear-gradient(135deg,rgba(255,255,255,.25) 0%,transparent 50%);pointer-events:none}
+    .badge-locked .badge-coin{filter:grayscale(1);opacity:.4}
+    .badge-locked{opacity:.55}
+  </style>
+
+  <!-- HEADER -->
+  <div style="background:linear-gradient(135deg,#78350F,#D97706,#FDE68A);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">YOUR ACHIEVEMENTS</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">🏅 Badge Collection</div>
+    <div style="font-size:11px;opacity:.85">${earned.length} of ${BADGES.length} badges earned</div>
+    <div style="height:6px;background:rgba(255,255,255,.25);border-radius:3px;margin-top:10px;overflow:hidden">
+      <div style="height:100%;width:${Math.round(earned.length/BADGES.length*100)}%;background:#fff;border-radius:3px;transition:width .5s"></div>
+    </div>
+    <div style="font-size:10px;opacity:.75;margin-top:3px">${Math.round(earned.length/BADGES.length*100)}% complete</div>
+  </div>
+
+  <!-- EARNED BADGES -->
+  ${earned.length?`
+  <div style="font-size:14px;font-weight:800;color:var(--t);margin-bottom:10px">✅ Earned Badges (${earned.length})</div>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px">
+    ${earned.map(b=>`
+    <div class="badge-card" style="background:${b.gradient};box-shadow:0 4px 20px ${b.glow},0 0 0 1px rgba(255,255,255,.1)">
+      <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:rgba(255,255,255,.08);border-radius:50%"></div>
+      <div class="badge-coin" style="background:${b.gradient};box-shadow:0 4px 16px ${b.glow},inset 0 1px 0 rgba(255,255,255,.3),0 0 0 3px rgba(255,255,255,.2)">
+        <span style="filter:drop-shadow(0 2px 4px rgba(0,0,0,.3))">${b.emoji}</span>
+      </div>
+      <div style="font-size:12px;font-weight:900;color:#fff;margin-bottom:3px;text-shadow:0 1px 4px rgba(0,0,0,.3)">${b.name}</div>
+      <div style="font-size:9px;color:rgba(255,255,255,.8);line-height:1.3;margin-bottom:6px">${b.desc}</div>
+      <div style="font-size:9px;font-weight:800;background:rgba(255,255,255,.2);border-radius:8px;padding:2px 8px;display:inline-block;color:#fff">+${b.xp} XP</div>
+    </div>`).join('')}
+  </div>`:''}
+
+  <!-- LOCKED BADGES -->
+  <div style="font-size:14px;font-weight:800;color:var(--t);margin-bottom:10px">🔒 Locked Badges (${locked.length})</div>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+    ${locked.map(b=>`
+    <div class="badge-card badge-locked" style="background:var(--s2);border:1px solid var(--border);box-shadow:var(--shadow)">
+      <div class="badge-coin" style="background:var(--s3)">
+        <span>${b.emoji}</span>
+      </div>
+      <div style="font-size:12px;font-weight:800;color:var(--t);margin-bottom:3px">${b.name}</div>
+      <div style="font-size:9px;color:var(--t3);line-height:1.3;margin-bottom:6px">${b.desc}</div>
+      <div style="font-size:9px;font-weight:700;background:rgba(0,0,0,.06);border-radius:8px;padding:2px 8px;display:inline-block;color:var(--t3)">🔒 ${b.unlock||'Keep donating'}</div>
     </div>`).join('')}
   </div>`;
 }
