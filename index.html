@@ -498,14 +498,21 @@ const BADGES = [
 ];
 
 const AI_RESPONSES = {
-  'eligible':'You can donate blood if you are 18-65 years old, weigh at least 50kg, and have not donated in the last 3 months.',
-  'prepare':'Stay hydrated, eat a healthy meal before donating, avoid alcohol 24hrs before, get enough sleep.',
-  'after':'Rest for 15 minutes after donation, drink plenty of fluids, avoid heavy exercise for 24 hours.',
-  'rare':'O- is the universal donor. AB+ is the universal recipient. Rare types include Bombay (hh) blood group.',
-  'recover':'Recovery takes 24-48 hours. Iron stores replenish in 4-8 weeks. Plasma restores within 24 hours.',
-  'safe':'Blood donation is completely safe. Sterile, single-use equipment is always used.',
-  'how often':'Whole blood can be donated every 3 months (90 days). Platelets can be donated every 2 weeks.',
-  'default':'I can help with questions about blood donation eligibility, preparation, safety, recovery, and blood types. What would you like to know?'
+  'eligible':'You can donate blood if you are 18-65 years old, weigh at least 50kg, and have not donated in the last 3 months. Tap "Check My Eligibility" below for a full AI check.',
+  'prepare':'Stay hydrated, eat a healthy meal (avoid fatty foods) 2-3 hours before donating, avoid alcohol 24hrs before, get 7-8 hours sleep, wear comfortable clothing.',
+  'after':'Rest for 15 minutes, drink extra fluids for 24 hours, eat iron-rich foods (spinach, beans, meat), avoid heavy exercise and alcohol for 24 hours, keep bandage on for 3 hours.',
+  'rare':'O- is the universal donor — can give to all types. AB+ is the universal recipient. Rarest types: Rh-null (Golden Blood, <50 worldwide), Bombay (hh), AB-.',
+  'recover':'Plasma restores within 24 hours. Platelets within 72 hours. Red blood cells within 4-6 weeks. Iron stores fully replenish in 4-8 weeks. Stay hydrated.',
+  'safe':'100% safe. Sterile, single-use needles and bags — never reused. You cannot get HIV or any disease from donating. You may feel light-headed briefly, which is normal.',
+  'how often':'Whole blood: every 3 months (90 days). Platelets: every 2 weeks. Plasma: every 4 weeks. Double red cells: every 6 months.',
+  'check':'To check your eligibility: are you 18-65 years old, above 50kg, feeling healthy today, and not donated in the last 90 days? If yes to all — you are eligible! Type your specific concern for a detailed check.',
+  'pressure':'If you have controlled blood pressure (under medication), you may still be able to donate. Consult your doctor first. Blood pressure must be below 180/100 at the time of donation.',
+  'diabetes':'Type 2 diabetics on oral medication can usually donate. Type 1 insulin-dependent diabetics: check with your donation center. Blood sugar must be controlled.',
+  'medication':'Many medications are acceptable. Aspirin: wait 48hrs. Antibiotics: wait until course finished + 7 days. Blood thinners: generally cannot donate. Ask us about specific medications.',
+  'weight':'Minimum weight is 50kg (110 lbs) for blood donation. This is for your safety — donation takes ~450ml which is about 8-10% of your blood volume.',
+  'tattoo':'You must wait 6 months after a tattoo or piercing before donating, to ensure no infection risk.',
+  'pregnant':'You cannot donate during pregnancy. Wait at least 6 months after giving birth before donating again.',
+  'default':'I\'m your BloodBridge AI assistant. I can help with eligibility checks, preparation tips, recovery advice, blood type info, and more. What would you like to know? 🩸'
 };
 
 const DEMO_USERS = {
@@ -637,10 +644,12 @@ function navigate(p){
     'donate-form':renderDonateForm, 'rare-registry':renderRareRegistry,
     'intl-search':renderIntlSearch, 'rare-management':renderRareManagement,
     'donor-passport':renderDonorPassport, 'global-analytics':renderGlobalAnalytics,
-    'ai-matching':renderAIMatchingPage, 'global-map':renderGlobalMap
+    'ai-matching':renderAIMatchingPage, 'global-map':renderGlobalMap,
+    'donor-track':renderDonorTrack
   };
   const fn=renders[p];
   document.getElementById('page').innerHTML=fn?fn():'<div class="empty"><div class="empty-icon">🔍</div><div>Page not found</div></div>';
+  if(p==='donor-track') setTimeout(initTrackingMap,100);
   if(p==='map') setTimeout(initMap,100);
   if(p==='global-map') setTimeout(initGlobalMap,100);
   if(p==='donor-passport') setTimeout(()=>{
@@ -752,6 +761,7 @@ function renderHome(){
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('rare-management');setbn('')">🔬 Rare Blood Mgmt</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('ai-matching');setbn('')">🤖 AI Emergency Matching</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('global-map');setbn('map')">🗺️ Global Map</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1;border-color:rgba(229,57,53,.3);color:var(--red)" onclick="navigate('donor-track');setbn('')">🚗 Track Live Donor</button>
   </div>
 
   <div class="sec-hdr"><div class="sec-title">🌟 Community</div><button class="sec-link" onclick="navigate('community')">See All</button></div>
@@ -968,43 +978,75 @@ function renderCommunity(){
 
 // ===== AI ASSISTANT =====
 function renderAI(){
-  chatHistory=[{role:'ai',text:'Hello! I\'m BloodAI — your blood donation assistant. I can help with eligibility, preparation, recovery, blood types, and more. What would you like to know? 🩸'}];
   return `
   <div class="sec-hdr"><div class="sec-title">🤖 AI Blood Assistant</div></div>
+  <div style="background:linear-gradient(135deg,var(--red),var(--reddark));border-radius:16px;padding:16px;margin-bottom:12px;color:#fff">
+    <div style="font-size:13px;font-weight:800;margin-bottom:12px">✅ AI Eligibility Checker</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div><div style="font-size:9px;font-weight:700;opacity:.8;margin-bottom:4px">AGE</div><input id="el-age" type="number" placeholder="e.g. 25" style="border-radius:8px;padding:8px;font-size:13px;border:none;width:100%;font-family:inherit;color:#1C1917"></div>
+      <div><div style="font-size:9px;font-weight:700;opacity:.8;margin-bottom:4px">WEIGHT (KG)</div><input id="el-weight" type="number" placeholder="e.g. 65" style="border-radius:8px;padding:8px;font-size:13px;border:none;width:100%;font-family:inherit;color:#1C1917"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div><div style="font-size:9px;font-weight:700;opacity:.8;margin-bottom:4px">LAST DONATION</div>
+        <select id="el-last" style="border-radius:8px;padding:8px;font-size:12px;border:none;width:100%;font-family:inherit;color:#1C1917">
+          <option value="never">Never donated</option><option value="3m">3+ months ago</option>
+          <option value="2m">2 months ago</option><option value="1m">1 month ago</option><option value="2w">2 weeks ago</option>
+        </select></div>
+      <div><div style="font-size:9px;font-weight:700;opacity:.8;margin-bottom:4px">FEELING TODAY</div>
+        <select id="el-feeling" style="border-radius:8px;padding:8px;font-size:12px;border:none;width:100%;font-family:inherit;color:#1C1917">
+          <option value="good">Healthy & Well</option><option value="cold">Have cold/flu</option>
+          <option value="meds">On medication</option><option value="tired">Feeling tired</option>
+        </select></div>
+    </div>
+    <button id="el-check-btn" style="width:100%;background:#fff;color:var(--red);border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">🤖 Check My Eligibility</button>
+    <div id="el-result" style="margin-top:10px;display:none"></div>
+  </div>
   <div class="chip-row">
-    <div class="chip" onclick="quickAsk('Am I eligible to donate?')">Eligibility</div>
-    <div class="chip" onclick="quickAsk('How do I prepare for donation?')">Prepare</div>
-    <div class="chip" onclick="quickAsk('Recovery tips after donation?')">Recovery</div>
-    <div class="chip" onclick="quickAsk('What are rare blood types?')">Rare Types</div>
+    <div class="chip" id="qa-eligible">Eligibility</div>
+    <div class="chip" id="qa-prepare">Prepare</div>
+    <div class="chip" id="qa-recover">Recovery</div>
+    <div class="chip" id="qa-rare">Rare Types</div>
+    <div class="chip" id="qa-safe">Safety</div>
+    <div class="chip" id="qa-often">Frequency</div>
+    <div class="chip" id="qa-diab">Diabetes</div>
+    <div class="chip" id="qa-tattoo">Tattoo</div>
   </div>
   <div class="chat-wrap" id="chat-wrap">
-    <div class="chat-msg ai">Hello! I\'m BloodAI — your blood donation assistant. I can help with eligibility, preparation, recovery, blood types, and more. What would you like to know? 🩸</div>
+    <div class="chat-msg ai">Hello! I am BloodAI your personal blood donation assistant. I can check your eligibility, answer any donation questions, and guide you through the process. What would you like to know?</div>
   </div>
   <div class="chat-input-wrap">
-    <input class="chat-input" id="chat-in" placeholder="Ask me anything about blood donation..." onkeydown="if(event.key==='Enter')sendChat()">
-    <button class="chat-send" onclick="sendChat()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+    <input class="chat-input" id="chat-in" placeholder="Ask me anything about blood donation...">
+    <button class="chat-send" id="chat-send-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
   </div>`;
 }
 
 function sendChat(){
   const inp=document.getElementById('chat-in');
-  const msg=inp.value.trim();
+  const msg=inp?.value?.trim();
   if(!msg) return;
   const wrap=document.getElementById('chat-wrap');
+  if(!wrap) return;
   wrap.innerHTML+=`<div class="chat-msg user">${msg}</div>`;
   inp.value='';
   const lc=msg.toLowerCase();
   let resp=AI_RESPONSES.default;
-  if(lc.includes('eligible')||lc.includes('can i')) resp=AI_RESPONSES['eligible'];
+  if(lc.includes('eligible')||lc.includes('can i donate')) resp=AI_RESPONSES['eligible'];
+  else if(lc.includes('check')||lc.includes('am i')) resp=AI_RESPONSES['check'];
   else if(lc.includes('prepar')||lc.includes('before')) resp=AI_RESPONSES['prepare'];
   else if(lc.includes('after')||lc.includes('recover')) resp=AI_RESPONSES['after'];
   else if(lc.includes('rare')||lc.includes('type')) resp=AI_RESPONSES['rare'];
-  else if(lc.includes('safe')||lc.includes('risk')) resp=AI_RESPONSES['safe'];
-  else if(lc.includes('how often')||lc.includes('frequency')) resp=AI_RESPONSES['how often'];
+  else if(lc.includes('safe')||lc.includes('risk')||lc.includes('danger')) resp=AI_RESPONSES['safe'];
+  else if(lc.includes('often')||lc.includes('frequen')||lc.includes('how many')) resp=AI_RESPONSES['how often'];
+  else if(lc.includes('pressure')||lc.includes('bp')) resp=AI_RESPONSES['pressure'];
+  else if(lc.includes('diabet')) resp=AI_RESPONSES['diabetes'];
+  else if(lc.includes('medic')||lc.includes('tablet')||lc.includes('pill')) resp=AI_RESPONSES['medication'];
+  else if(lc.includes('weight')||lc.includes('kg')||lc.includes('lb')) resp=AI_RESPONSES['weight'];
+  else if(lc.includes('tattoo')||lc.includes('piercing')) resp=AI_RESPONSES['tattoo'];
+  else if(lc.includes('pregn')||lc.includes('baby')||lc.includes('birth')) resp=AI_RESPONSES['pregnant'];
   setTimeout(()=>{wrap.innerHTML+=`<div class="chat-msg ai">${resp}</div>`;wrap.scrollTop=wrap.scrollHeight;},600);
   wrap.scrollTop=wrap.scrollHeight;
 }
-function quickAsk(q){document.getElementById('chat-in').value=q;sendChat();}
+function quickAsk(q){const inp=document.getElementById('chat-in');if(inp){inp.value=q;sendChat();}}
 
 // ===== ACHIEVEMENTS =====
 function renderAchievements(){
@@ -1429,6 +1471,100 @@ function sharePassport(){
   const intlNum=`BB-MV-${new Date().getFullYear()}-${(u.id||'').slice(0,6).toUpperCase()}`;
   if(navigator.share){navigator.share({title:'My BloodBridge Donor Passport',text:`I'm a blood donor! My ID: ${intlNum}. Join me on BloodBridge to save lives!`,url:'https://bloodbridge.jinerh.workers.dev'});}
   else{navigator.clipboard?.writeText(`BloodBridge Donor: ${u.name} | ID: ${intlNum} | ${u.bloodGroup} | ${u.donations||0} donations`);toast('Passport info copied!','success');}
+}
+
+// ===== AI ELIGIBILITY CHECKER =====
+function checkEligibility() {
+  const age = +document.getElementById('el-age')?.value || 0;
+  const weight = +document.getElementById('el-weight')?.value || 0;
+  const last = document.getElementById('el-last')?.value || 'never';
+  const feeling = document.getElementById('el-feeling')?.value || 'good';
+  const result = document.getElementById('el-result');
+  if(!result) return;
+
+  let eligible = true;
+  let reasons = [];
+  let tips = [];
+
+  if(age < 18) { eligible=false; reasons.push('❌ Must be at least 18 years old'); }
+  else if(age > 65) { eligible=false; reasons.push('❌ Must be under 65 years old'); }
+  else tips.push('✓ Age is within range');
+
+  if(weight < 50) { eligible=false; reasons.push('❌ Must weigh at least 50 kg'); }
+  else tips.push('✓ Weight is sufficient');
+
+  if(last==='2w'||last==='1m') { eligible=false; reasons.push('❌ Must wait 3 months between donations'); }
+  else if(last==='2m') { eligible=false; reasons.push('❌ Need 1 more month before next donation'); }
+  else tips.push('✓ Donation interval is OK');
+
+  if(feeling==='cold') { eligible=false; reasons.push('❌ Cannot donate while sick — wait until fully recovered'); }
+  else if(feeling==='meds') { reasons.push('⚠️ Some medications may disqualify — check with staff'); }
+  else if(feeling==='tired') { reasons.push('⚠️ Rest first — come back when you feel stronger'); eligible=false; }
+  else tips.push('✓ Feeling well today');
+
+  result.style.display='block';
+  result.innerHTML = eligible
+    ? `<div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px">
+        <div style="font-size:16px;font-weight:900;margin-bottom:6px">✅ YOU ARE ELIGIBLE!</div>
+        <div style="font-size:11px;opacity:.9;margin-bottom:8px">${tips.join('<br>')}</div>
+        <div style="font-size:11px;opacity:.8">💡 Tip: Drink 500ml water before donating and eat a light meal.</div>
+       </div>`
+    : `<div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px">
+        <div style="font-size:14px;font-weight:900;margin-bottom:6px">⚠️ NOT ELIGIBLE RIGHT NOW</div>
+        <div style="font-size:11px;opacity:.9">${[...reasons,...tips].join('<br>')}</div>
+       </div>`;
+}
+
+// ===== DONATION STREAKS + DONOR SCORE =====
+function getDonorScore(u) {
+  const base = (u.donations||0) * 10;
+  const xpBonus = Math.floor((u.xp||0) / 10);
+  const badgeBonus = (u.badges?.length||0) * 15;
+  const streakBonus = getDonationStreak(u) * 5;
+  return Math.min(1000, base + xpBonus + badgeBonus + streakBonus);
+}
+
+function getDonationStreak(u) {
+  const myDons = donations.filter(d=>d.donorId===u?.id).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(!myDons.length) return 0;
+  let streak=1;
+  for(let i=1;i<myDons.length;i++){
+    const diff=(new Date(myDons[i-1].date)-new Date(myDons[i].date))/(864e5);
+    if(diff<=95) streak++;
+    else break;
+  }
+  return streak;
+}
+
+function renderDonorScore(u) {
+  if(!u) return '';
+  const score = getDonorScore(u);
+  const streak = getDonationStreak(u);
+  const tier = score>=800?{name:'Platinum',color:'#E5E4E2',emoji:'💎'}:score>=600?{name:'Gold',color:'#D4AF37',emoji:'🥇'}:score>=400?{name:'Silver',color:'#9CA3AF',emoji:'🥈'}:score>=200?{name:'Bronze',color:'#CD7F32',emoji:'🥉'}:{name:'Starter',color:'#E53935',emoji:'🩸'};
+
+  return `
+  <div class="card" style="margin-bottom:12px;border-top:3px solid ${tier.color}">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div>
+        <div style="font-size:11px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.06em">Donor Score</div>
+        <div style="font-size:28px;font-weight:900;color:var(--t)">${score}<span style="font-size:12px;color:var(--t3)">/1000</span></div>
+        <div style="font-size:12px;font-weight:700;color:${tier.color}">${tier.emoji} ${tier.name} Donor</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:11px;color:var(--t3);font-weight:700;margin-bottom:4px">🔥 STREAK</div>
+        <div style="font-size:30px;font-weight:900;color:${streak>2?'#FF6B00':'var(--t)'}">${streak}</div>
+        <div style="font-size:10px;color:var(--t3)">donations</div>
+      </div>
+    </div>
+    <div style="height:8px;background:var(--s3);border-radius:4px;overflow:hidden;margin-bottom:8px">
+      <div style="height:100%;width:${score/10}%;background:linear-gradient(90deg,${tier.color},${tier.color}aa);border-radius:4px;transition:width .5s"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:10px">
+      <div style="text-align:center;background:var(--s2);border-radius:8px;padding:6px"><div style="font-weight:700">${(u.donations||0)*10}</div><div style="color:var(--t3)">Donation pts</div></div>
+      <div style="text-align:center;background:var(--s2);border-radius:8px;padding:6px"><div style="font-weight:700">${(u.badges?.length||0)*15}</div><div style="color:var(--t3)">Badge pts</div></div>
+      <div style="text-align:center;background:var(--s2);border-radius:8px;padding:6px"><div style="font-weight:700">${streak*5}</div><div style="color:var(--t3)">Streak pts</div></div>
+    </div>
+  </div>`;
 }
 
 function shareReferral(){
@@ -2277,6 +2413,212 @@ function runAIMatch(bg, el) {
   }
 }
 
+// ===== LIVE DONOR TRACKING =====
+let trackingMap = null;
+let donorMarker = null;
+let trackInterval = null;
+let trackMessages = [
+  {from:'system',text:'🚨 Emergency request sent to nearby donors',time:'just now'},
+  {from:'donor',text:'I am on my way! ETA ~8 minutes 🩸',time:'1 min ago'},
+];
+let activeTrackDonor = {
+  name:'Ahmed Ali', bloodGroup:'O+', island:'Malé',
+  lat:4.1720, lng:73.5070, donations:18, eta:8,
+  dest:{lat:4.1748, lng:73.5093, name:'IGMH Hospital'}
+};
+
+function renderDonorTrack() {
+  const d = activeTrackDonor;
+  return `
+  <style>
+    .track-donor-pulse::after{content:'';position:absolute;width:48px;height:48px;border-radius:50%;background:rgba(229,57,53,.3);animation:trackPulse 1.5s infinite;top:-8px;left:-8px;z-index:-1}
+    @keyframes trackPulse{0%{transform:scale(1);opacity:1}100%{transform:scale(2);opacity:0}}
+    .msg-bubble-donor{background:#fff;border:1px solid var(--border);border-radius:14px 14px 14px 4px;padding:10px 13px;max-width:80%;align-self:flex-start;font-size:13px;color:var(--t)}
+    .msg-bubble-me{background:var(--red);border-radius:14px 14px 4px 14px;padding:10px 13px;max-width:80%;align-self:flex-end;font-size:13px;color:#fff}
+    .msg-bubble-sys{background:var(--s2);border-radius:10px;padding:8px 12px;max-width:90%;align-self:center;font-size:11px;color:var(--t3);text-align:center}
+  </style>
+
+  <!-- BACK + TITLE -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+    <button class="btn btn-ghost btn-sm" onclick="navigate('requests');setbn('requests')">← Back</button>
+    <div>
+      <div style="font-size:15px;font-weight:800;color:var(--t)">Donor En Route 🩸</div>
+      <div style="font-size:11px;color:var(--t3)">Live tracking · Updates every 10s</div>
+    </div>
+    <div style="margin-left:auto;background:#E8F5E9;color:#2E7D32;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:4px">
+      <div style="width:6px;height:6px;background:#2E7D32;border-radius:50%;animation:trackPulse 1s infinite"></div>
+      LIVE
+    </div>
+  </div>
+
+  <!-- TRACKING MAP -->
+  <div style="position:relative;margin-bottom:12px">
+    <div id="tracking-map" style="height:320px;border-radius:16px;overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow)"></div>
+    <!-- ETA overlay -->
+    <div style="position:absolute;top:10px;left:10px;background:#fff;border-radius:12px;padding:8px 12px;box-shadow:0 2px 12px rgba(0,0,0,.15);z-index:500">
+      <div style="font-size:10px;color:var(--t3);font-weight:700">ETA</div>
+      <div id="eta-display" style="font-size:20px;font-weight:900;color:var(--red)">${d.eta} min</div>
+    </div>
+    <!-- Distance overlay -->
+    <div style="position:absolute;top:10px;right:10px;background:#fff;border-radius:12px;padding:8px 12px;box-shadow:0 2px 12px rgba(0,0,0,.15);z-index:500">
+      <div style="font-size:10px;color:var(--t3);font-weight:700">DISTANCE</div>
+      <div id="dist-display" style="font-size:16px;font-weight:900;color:var(--t)">0.4 km</div>
+    </div>
+  </div>
+
+  <!-- DONOR INFO CARD (like Uber driver card) -->
+  <div style="background:#fff;border:1px solid var(--border);border-radius:20px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow)">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <div style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--reddark));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff;flex-shrink:0;border:3px solid rgba(229,57,53,.3);position:relative" class="track-donor-pulse">
+        ${d.name[0]}
+      </div>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:800;color:var(--t)">${d.name}</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
+          <span style="background:rgba(229,57,53,.1);color:var(--red);font-size:11px;font-weight:900;padding:2px 8px;border-radius:8px">${d.bloodGroup}</span>
+          <span style="font-size:11px;color:var(--t3)">📍 ${d.island} · ${d.donations} donations</span>
+        </div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:22px;font-weight:900;color:var(--red)" id="eta-card">${d.eta}</div>
+        <div style="font-size:9px;color:var(--t3);font-weight:700">MIN AWAY</div>
+      </div>
+    </div>
+
+    <!-- PROGRESS BAR -->
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--t3);margin-bottom:4px">
+        <span>📍 Donor location</span>
+        <span>🏥 ${d.dest.name}</span>
+      </div>
+      <div style="height:6px;background:var(--s3);border-radius:3px;overflow:hidden">
+        <div id="track-progress" style="height:100%;width:15%;background:linear-gradient(90deg,var(--red),#FF6B6B);border-radius:3px;transition:width 2s ease"></div>
+      </div>
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button style="background:var(--red);color:#fff;border:none;border-radius:12px;padding:12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px" onclick="document.getElementById('chat-section').scrollIntoView({behavior:'smooth'})">
+        💬 Message Donor
+      </button>
+      <button style="background:var(--s2);color:var(--t);border:1px solid var(--border);border-radius:12px;padding:12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px" onclick="toast('Calling ${d.name}...','info')">
+        📞 Call Donor
+      </button>
+    </div>
+  </div>
+
+  <!-- DESTINATION INFO -->
+  <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow)">
+    <div style="width:36px;height:36px;border-radius:10px;background:#E3F2FD;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🏥</div>
+    <div>
+      <div style="font-size:12px;font-weight:700;color:var(--t)">${d.dest.name}</div>
+      <div style="font-size:10px;color:var(--t3)">Destination · Blood needed urgently</div>
+    </div>
+    <div style="margin-left:auto;font-size:10px;color:var(--green);font-weight:700">✓ Confirmed</div>
+  </div>
+
+  <!-- CHAT / MESSAGE SECTION -->
+  <div id="chat-section" style="background:#fff;border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:var(--shadow)">
+    <div style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
+      <div style="font-size:13px;font-weight:700;color:var(--t)">💬 Chat with ${d.name}</div>
+      <div style="margin-left:auto;font-size:10px;color:var(--green)">● Online</div>
+    </div>
+    <div id="track-messages" style="padding:12px;display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto">
+      ${trackMessages.map(m=>`<div class="msg-bubble-${m.from==='system'?'sys':m.from==='donor'?'donor':'me'}">
+        ${m.text}
+        <div style="font-size:9px;opacity:.6;margin-top:3px;text-align:${m.from==='me'?'right':'left'}">${m.time}</div>
+      </div>`).join('')}
+    </div>
+    <div style="padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:8px">
+      <input id="track-msg-input" style="flex:1;border-radius:20px;border:1px solid var(--border);padding:9px 14px;font-size:13px;font-family:inherit;outline:none;background:var(--s2)" placeholder="Type a message...">
+      <button id="track-send-btn" style="width:40px;height:40px;border-radius:50%;background:var(--red);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>`;
+}
+
+function initTrackingMap() {
+  const el = document.getElementById('tracking-map');
+  if(!el || !window.L) return;
+  if(trackingMap) { try{trackingMap.remove();}catch(e){} trackingMap=null; }
+  if(trackInterval) { clearInterval(trackInterval); trackInterval=null; }
+
+  const d = activeTrackDonor;
+  trackingMap = L.map('tracking-map',{center:[4.1730, 73.5080],zoom:15,zoomControl:false,attributionControl:false});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(trackingMap);
+
+  // Hospital (destination) marker
+  const hospitalIcon = L.divIcon({
+    html:`<div style="background:#2196F3;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid #fff;box-shadow:0 4px 12px rgba(33,150,243,.5);font-size:18px">🏥</div>`,
+    className:'',iconSize:[40,40],iconAnchor:[20,20]
+  });
+  L.marker([d.dest.lat,d.dest.lng],{icon:hospitalIcon}).addTo(trackingMap).bindPopup(`<b>${d.dest.name}</b>`);
+
+  // Route line (dashed)
+  const routeLine = L.polyline([[d.lat,d.lng],[d.dest.lat,d.dest.lng]],{color:'#E53935',weight:3,dashArray:'6,8',opacity:.6}).addTo(trackingMap);
+
+  // Donor (moving) marker
+  const donorIconHTML = `<div style="position:relative;width:48px;height:48px">
+    <div style="position:absolute;inset:0;background:rgba(229,57,53,.2);border-radius:50%;animation:trackPulse 1.5s infinite"></div>
+    <div style="position:relative;width:48px;height:48px;background:var(--red,#E53935);border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid #fff;box-shadow:0 4px 16px rgba(229,57,53,.5);font-size:18px;z-index:1">🩸</div>
+  </div>`;
+  const donorIcon = L.divIcon({html:donorIconHTML,className:'',iconSize:[48,48],iconAnchor:[24,24]});
+  donorMarker = L.marker([d.lat,d.lng],{icon:donorIcon}).addTo(trackingMap).bindPopup(`<b>${d.name}</b><br>${d.bloodGroup} Donor`);
+
+  // Fit both markers
+  trackingMap.fitBounds([[d.lat,d.lng],[d.dest.lat,d.dest.lng]],{padding:[40,40]});
+
+  // Animate donor toward destination
+  let progress = 0;
+  const totalSteps = d.eta * 6; // 6 steps per minute
+  trackInterval = setInterval(()=>{
+    progress = Math.min(progress + 1/totalSteps, 1);
+    const newLat = d.lat + (d.dest.lat - d.lat) * progress;
+    const newLng = d.lng + (d.dest.lng - d.lng) * progress;
+    donorMarker.setLatLng([newLat,newLng]);
+
+    // Update ETA and progress bar
+    const etaLeft = Math.max(0,Math.ceil(d.eta*(1-progress)));
+    const etaEl = document.getElementById('eta-display');
+    const etaCard = document.getElementById('eta-card');
+    const distEl = document.getElementById('dist-display');
+    const progEl = document.getElementById('track-progress');
+    if(etaEl) etaEl.textContent = etaLeft===0?'Arrived!':etaLeft+' min';
+    if(etaCard) etaCard.textContent = etaLeft===0?'🏥':''+etaLeft;
+    if(distEl) distEl.textContent = progress>=1?'0 m':+(0.4*(1-progress)).toFixed(2)+' km';
+    if(progEl) progEl.style.width = (progress*100)+'%';
+
+    if(progress >= 1) {
+      clearInterval(trackInterval);
+      toast('🩸 Donor has arrived at '+d.dest.name+'!','success');
+      // Add arrival message
+      addTrackMessage('donor','I have arrived at the hospital! 🏥 Please come to the blood bank reception.','just now');
+    }
+  }, 10000); // every 10 seconds
+}
+
+function addTrackMessage(from, text, time) {
+  trackMessages.push({from,text,time});
+  const container = document.getElementById('track-messages');
+  if(!container) return;
+  const div = document.createElement('div');
+  div.className = `msg-bubble-${from==='system'?'sys':from==='donor'?'donor':'me'}`;
+  div.innerHTML = `${text}<div style="font-size:9px;opacity:.6;margin-top:3px;text-align:${from==='me'?'right':'left'}">${time}</div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function sendTrackMessage() {
+  const inp = document.getElementById('track-msg-input');
+  if(!inp||!inp.value.trim()) return;
+  const msg = inp.value.trim();
+  addTrackMessage('me', msg, 'just now');
+  inp.value = '';
+  // Simulate donor reply
+  setTimeout(()=>addTrackMessage('donor','Got it! I will be there soon 🚗','just now'),2000+Math.random()*3000);
+}
+
 // ===== GLOBAL MAP =====
 let globalMapInst = null;
 function renderGlobalMap() {
@@ -2345,6 +2687,23 @@ setTimeout(()=>{
   document.getElementById('splash').classList.add('hide');
   if(currentUser){showApp();}
   else{document.getElementById('auth-screen').style.display='flex';}
+  // AI page listeners
+  document.addEventListener('click', function(e) {
+    if(e.target.id==='chat-send-btn'||e.target.closest('#chat-send-btn')) sendChat();
+    if(e.target.id==='el-check-btn') checkEligibility();
+    const qaMap={'qa-eligible':'Am I eligible to donate blood?','qa-prepare':'How do I prepare for donation?','qa-recover':'Recovery tips after donation?','qa-rare':'What are rare blood types?','qa-safe':'Is blood donation safe?','qa-often':'How often can I donate?','qa-diab':'Can I donate with diabetes?','qa-tattoo':'Tattoo and donation?'};
+    if(qaMap[e.target.id]) quickAsk(qaMap[e.target.id]);
+  });
+  document.addEventListener('keydown', function(e) {
+    if(e.key==='Enter'&&document.getElementById('chat-in')===document.activeElement) sendChat();
+  });
+  // Track page send button
+  document.addEventListener('click', function(e) {
+    if(e.target.id==='track-send-btn'||e.target.closest('#track-send-btn')) sendTrackMessage();
+  });
+  document.addEventListener('keydown', function(e) {
+    if(e.key==='Enter'&&document.getElementById('track-msg-input')===document.activeElement) sendTrackMessage();
+  });
   // AI match button
   document.addEventListener('click', function(e) {
     if(e.target.id==='ai-match-btn') {
