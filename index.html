@@ -664,7 +664,11 @@ function navigate(p){
     'maldives':renderMaldivesHub, 'country-challenge':renderCountryChallenge,
     'health-dash':renderHealthDash, 'gamification':renderGamificationHub,
     'trading-cards':renderTradingCards, 'unique-features':renderUniqueFeatures,
-    'island-championship':renderIslandChampionship, 'missions':renderMissions
+    'island-championship':renderIslandChampionship, 'missions':renderMissions,
+    'nft-certs':renderNFTCerts, 'museum':renderMuseum, 'family-tree':renderFamilyTree,
+    'avatar':renderAvatarCustom, 'friends':renderFriends, 'polls':renderPolls,
+    'birthdays':renderBirthdays, 'simulator':renderShortageSimulator,
+    'mv-awards':renderMVAwards
   };
   const fn=renders[p];
   document.getElementById('page').innerHTML=fn?fn():'<div class="empty"><div class="empty-icon">🔍</div><div>Page not found</div></div>';
@@ -805,6 +809,15 @@ function renderHome(){
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('island-championship');setbn('')">🏝️ Island Championship</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('trading-cards');setbn('')">🎴 Blood Hero Cards</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1;background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(124,58,237,.05));border-color:rgba(212,175,55,.3);color:var(--gold)" onclick="navigate('unique-features');setbn('')">⭐ Unique Features</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('nft-certs');setbn('')">🏅 NFT Certificates</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('museum');setbn('')">🏛️ Donation Museum</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('family-tree');setbn('')">🌳 Donor Family Tree</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('avatar');setbn('')">🎨 My Avatar</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('friends');setbn('')">👥 Friends & Follow</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('polls');setbn('')">📊 Community Polls</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('birthdays');setbn('')">🎂 Birthdays</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('simulator');setbn('')">🔬 Shortage Simulator</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1;background:linear-gradient(135deg,rgba(0,77,64,.08),rgba(38,166,154,.05));border-color:rgba(0,77,64,.3);color:#004D40" onclick="navigate('mv-awards');setbn('')">🇲🇻 Maldives Blood Hero Awards</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('emergency-hub');setbn('')">🚨 Emergency Hub</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('community');setbn('')">🌍 Community Hub</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('world-rankings');setbn('')">🏆 World Rankings</button>
@@ -3972,6 +3985,394 @@ function renderUniqueFeatures() {
   </div>`).join('')}`;
 }
 
+// ===== NFT CERTIFICATES =====
+function renderNFTCerts() {
+  const u=currentUser||{name:'Guest',donations:0,bloodGroup:'O+',id:'GUEST'};
+  const intlNum=`BB-MV-${new Date().getFullYear()}-${(u.id||'').slice(0,6).toUpperCase()}`;
+  const certs=[
+    {id:'c1',title:'First Blood Drop',emoji:'💧',rarity:'Common',date:'2026-01-15',desc:'Awarded for your very first blood donation.',color:'#06B6D4',earned:(u.donations||0)>=1},
+    {id:'c2',title:'Lifesaver Hero',emoji:'🦸',rarity:'Rare',date:'2026-03-20',desc:'5 donations completed — you have officially saved lives.',color:'#7C3AED',earned:(u.donations||0)>=5},
+    {id:'c3',title:'Gold Donor',emoji:'🥇',rarity:'Epic',date:'2026-05-01',desc:'25 donations — Gold status achieved.',color:'#D4AF37',earned:(u.donations||0)>=25},
+    {id:'c4',title:'Blood Warrior',emoji:'⚔️',rarity:'Legendary',date:'—',desc:'100 donations — Ultimate Blood Warrior status.',color:'#DC2626',earned:(u.donations||0)>=100},
+    {id:'c5',title:'Emergency Responder',emoji:'🚨',rarity:'Special',date:'—',desc:'Responded to an emergency blood request.',color:'#F59E0B',earned:(u.donations||0)>=1},
+    {id:'c6',title:'Rare Blood Hero',emoji:'🩸',rarity:'Ultra Rare',date:'—',desc:'Rare blood type registered in the Global Registry.',color:'#BE123C',earned:['O-','B-','A-','AB-'].includes(u.bloodGroup||'')},
+  ];
+  const rarityColors={Common:'#06B6D4',Rare:'#7C3AED',Epic:'#D4AF37',Legendary:'#DC2626',Special:'#F59E0B','Ultra Rare':'#BE123C'};
+  return `
+  <div style="background:linear-gradient(135deg,#1E1B4B,#4338CA,#7C3AED);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">BLOCKCHAIN VERIFIED</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">🏅 Blood Hero NFT Certificates</div>
+    <div style="font-size:11px;opacity:.85">Unique digital certificates for every milestone — permanently recorded on blockchain</div>
+  </div>
+  <div class="card" style="margin-bottom:12px;border:1px solid rgba(99,102,241,.3);background:rgba(99,102,241,.04)">
+    <div style="font-size:11px;color:#6366F1;font-weight:700;margin-bottom:4px">⛓️ Blockchain Verification</div>
+    <div style="font-size:12px;color:var(--t2)">Your certificates are cryptographically signed and stored on the BloodBridge blockchain. Each NFT is unique, non-transferable, and verifiable by any hospital worldwide.</div>
+    <div style="font-size:10px;color:var(--t3);margin-top:6px;font-family:monospace">Wallet: BB-${intlNum} · Chain: BloodBridge-v1</div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    ${certs.map(c=>`
+    <div style="background:${c.earned?'#fff':'#f9fafb'};border:1px solid ${c.earned?c.color+'40':'var(--border)'};border-radius:16px;overflow:hidden;box-shadow:${c.earned?'0 4px 16px '+c.color+'25':'var(--shadow)'};${!c.earned?'opacity:.55':''}">
+      <div style="background:${c.earned?`linear-gradient(135deg,${c.color}22,${c.color}11)`:'var(--s2)'};padding:14px;text-align:center;border-bottom:1px solid ${c.color}20">
+        <div style="font-size:32px;margin-bottom:4px">${c.emoji}</div>
+        <div style="font-size:11px;font-weight:900;color:${c.earned?c.color:'var(--t3)'}">${c.title}</div>
+        <div style="font-size:8px;font-weight:700;padding:1px 8px;border-radius:10px;background:${c.color}20;color:${c.color};display:inline-block;margin-top:4px">${c.rarity}</div>
+      </div>
+      <div style="padding:10px">
+        <div style="font-size:9px;color:var(--t3);line-height:1.4;margin-bottom:8px">${c.desc}</div>
+        ${c.earned?`
+        <div style="font-size:9px;color:${c.color};font-weight:700;margin-bottom:6px">✓ Earned ${c.date!=='—'?c.date:'Today'}</div>
+        <button style="width:100%;background:${c.color};color:#fff;border:none;border-radius:8px;padding:7px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit" onclick="downloadNFTCert('${c.title}','${c.emoji}','${c.rarity}')">📥 Download NFT</button>`:`
+        <div style="font-size:9px;color:var(--t3)">🔒 Not yet earned</div>`}
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+function downloadNFTCert(title,emoji,rarity) {
+  if(!window.jspdf){toast('Loading...','i');return;}
+  const {jsPDF}=window.jspdf;
+  const u=currentUser||{name:'Donor',bloodGroup:'O+',id:'GUEST'};
+  const doc=new jsPDF();
+  doc.setFillColor(30,27,75);doc.rect(0,0,210,297,'F');
+  doc.setFillColor(67,56,202);doc.rect(10,10,190,277,'S');
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(10);doc.text('BLOODBRIDGE · BLOCKCHAIN VERIFIED NFT CERTIFICATE',105,25,{align:'center'});
+  doc.setFontSize(36);doc.text(emoji,105,65,{align:'center'});
+  doc.setFontSize(22);doc.setFont(undefined,'bold');doc.text(title,105,90,{align:'center'});
+  doc.setFontSize(12);doc.setFont(undefined,'normal');doc.setTextColor(196,196,255);
+  doc.text(`Rarity: ${rarity}`,105,105,{align:'center'});
+  doc.setTextColor(255,255,255);doc.setFontSize(14);
+  doc.text('This certifies that',105,130,{align:'center'});
+  doc.setFontSize(20);doc.setFont(undefined,'bold');doc.text(u.name,105,148,{align:'center'});
+  doc.setFontSize(12);doc.setFont(undefined,'normal');
+  doc.text(`has earned the "${title}" certificate`,105,162,{align:'center'});
+  doc.text(`Blood Type: ${u.bloodGroup||'O+'} · BloodBridge Donor`,105,175,{align:'center'});
+  doc.setTextColor(196,196,255);doc.setFontSize(9);
+  doc.text(`Certificate ID: BB-NFT-${Date.now().toString(36).toUpperCase()}`,105,200,{align:'center'});
+  doc.text(`Blockchain: BloodBridge-v1 · Non-Transferable`,105,210,{align:'center'});
+  doc.text(`Issued: ${new Date().toLocaleDateString()} · Valid: Lifetime`,105,220,{align:'center'});
+  doc.save(`bloodbridge-nft-${title.replace(/\s/g,'-').toLowerCase()}.pdf`);
+  toast('NFT Certificate downloaded! ⛓️','success');
+}
+
+// ===== VIRTUAL BLOOD DONATION MUSEUM =====
+function renderMuseum() {
+  const exhibits=[
+    {year:'460 BC',title:'First Blood Theory',desc:'Hippocrates theorizes about blood as one of the four humors. The foundation of medical understanding of blood.',emoji:'📜'},
+    {year:'1628',title:'Blood Circulation Discovered',desc:'William Harvey publishes "De Motu Cordis" proving blood circulates through the body — a revolutionary discovery.',emoji:'🔬'},
+    {year:'1665',title:'First Blood Transfusion',desc:'Richard Lower performs the first successful blood transfusion between two dogs, opening the door to modern transfusion medicine.',emoji:'🐕'},
+    {year:'1818',title:'First Human Transfusion',desc:'James Blundell performs the first successful human blood transfusion, saving a woman after childbirth complications.',emoji:'👶'},
+    {year:'1901',title:'ABO Blood Groups Discovered',desc:'Karl Landsteiner discovers ABO blood groups, making safe transfusions possible. He wins the Nobel Prize in 1930.',emoji:'🏆'},
+    {year:'1914',title:'First Blood Bank Concept',desc:'Long-term preservation of blood becomes possible with sodium citrate anticoagulant, allowing stored blood donations.',emoji:'🏥'},
+    {year:'1937',title:'World\'s First Blood Bank',desc:'Bernard Fantus establishes the world\'s first blood bank at Cook County Hospital in Chicago, USA.',emoji:'🇺🇸'},
+    {year:'1945',title:'Rh Factor Discovered',desc:'Karl Landsteiner and Alexander Wiener discover the Rh blood group system, preventing Rh disease in newborns.',emoji:'🧬'},
+    {year:'1960s',title:'Blood Fractionation Era',desc:'Blood can now be separated into components (red cells, plasma, platelets) — one donation can save up to 3 people.',emoji:'💉'},
+    {year:'2000s',title:'Digital Blood Networks',desc:'Online donor registries and digital blood banks connect donors with patients worldwide for the first time.',emoji:'💻'},
+    {year:'2020s',title:'AI Blood Matching',desc:'Artificial intelligence revolutionizes donor-patient matching, emergency coordination, and blood demand forecasting.',emoji:'🤖'},
+    {year:'2026',title:'BloodBridge Era',desc:'BloodBridge launches the world\'s first gamified, AI-powered, blockchain-verified global blood donation platform.',emoji:'🩸'},
+  ];
+  return `
+  <div style="background:linear-gradient(135deg,#1C1917,#292524,#44403C);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.7;margin-bottom:4px">INTERACTIVE</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">🏛️ Virtual Blood Donation Museum</div>
+    <div style="font-size:11px;opacity:.8">Journey through 2,500 years of blood donation history</div>
+  </div>
+  <div style="position:relative">
+    <div style="position:absolute;left:20px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--red),#FFB3B3);border-radius:2px"></div>
+    ${exhibits.map((e,i)=>`
+    <div style="display:flex;gap:16px;margin-bottom:16px;padding-left:8px">
+      <div style="position:relative;flex-shrink:0;padding-top:4px">
+        <div style="width:28px;height:28px;border-radius:50%;background:${i===exhibits.length-1?'var(--red)':'#fff'};border:3px solid var(--red);display:flex;align-items:center;justify-content:center;font-size:12px;z-index:1;position:relative">${e.emoji}</div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;flex:1;box-shadow:var(--shadow)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div style="font-size:12px;font-weight:900;color:var(--t)">${e.title}</div>
+          <div style="font-size:10px;font-weight:800;color:var(--red);background:rgba(229,57,53,.1);padding:2px 8px;border-radius:10px">${e.year}</div>
+        </div>
+        <div style="font-size:11px;color:var(--t2);line-height:1.5">${e.desc}</div>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ===== DONOR FAMILY TREE =====
+function renderFamilyTree() {
+  const u=currentUser||{name:'Guest',donations:0,referralCode:'BB0000'};
+  const tree=[
+    {level:0,name:u.name,donations:u.donations||0,role:'You',color:'var(--red)'},
+    {level:1,name:'Ahmed Jinaah',donations:3,role:'Referred by you',color:'#2196F3'},
+    {level:1,name:'Fatima Hassan',donations:5,role:'Referred by you',color:'#9C27B0'},
+    {level:2,name:'Ibrahim Rasheed',donations:1,role:'Referred by Ahmed',color:'#4CAF50'},
+    {level:2,name:'Mariyam Ali',donations:2,role:'Referred by Fatima',color:'#FF9800'},
+  ];
+  const totalFamily=tree.reduce((s,m)=>s+m.donations,0);
+  return `
+  <div style="background:linear-gradient(135deg,#064E3B,#059669,#34D399);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">LEGACY</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">🌳 Donor Family Tree</div>
+    <div style="font-size:11px;opacity:.85">Your referral network — every person you bring grows your legacy</div>
+  </div>
+  <div class="card" style="margin-bottom:12px;text-align:center">
+    <div style="font-size:28px;font-weight:900;color:var(--green)">${totalFamily}</div>
+    <div style="font-size:12px;color:var(--t3)">Total donations by your family tree</div>
+    <div style="font-size:11px;color:var(--green);margin-top:4px">≈ ${Math.floor(totalFamily*2.7)} lives saved by your network 🌍</div>
+  </div>
+  <!-- TREE VISUALIZATION -->
+  <div style="display:flex;flex-direction:column;align-items:center;gap:0">
+    ${tree.filter(m=>m.level===0).map(m=>`
+    <div style="text-align:center">
+      <div style="width:70px;height:70px;border-radius:50%;background:${m.color};color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;margin:0 auto;border:4px solid rgba(255,255,255,.8);box-shadow:0 4px 16px ${m.color}40">${(m.name||'Y')[0]}</div>
+      <div style="font-size:12px;font-weight:800;color:var(--t);margin-top:6px">${m.name}</div>
+      <div style="font-size:10px;color:var(--t3)">${m.donations} donations</div>
+    </div>
+    <div style="width:2px;height:24px;background:var(--border);margin:4px auto"></div>`).join('')}
+    <div style="display:flex;gap:16px;align-items:flex-start">
+      ${tree.filter(m=>m.level===1).map((m,i)=>`
+      <div style="text-align:center">
+        <div style="width:52px;height:52px;border-radius:50%;background:${m.color};color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;margin:0 auto;border:3px solid rgba(255,255,255,.7)">${(m.name||'?')[0]}</div>
+        <div style="font-size:10px;font-weight:700;color:var(--t);margin-top:4px">${m.name.split(' ')[0]}</div>
+        <div style="font-size:9px;color:var(--t3)">${m.donations} dons</div>
+        <div style="width:2px;height:16px;background:var(--border);margin:4px auto"></div>
+        <div style="width:40px;height:40px;border-radius:50%;background:${i===0?tree.find(x=>x.level===2&&x.role.includes('Ahmed'))?.color||'#4CAF50':tree.find(x=>x.level===2&&x.role.includes('Fatima'))?.color||'#FF9800'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;margin:0 auto;border:2px solid rgba(255,255,255,.6)">${i===0?'I':'M'}</div>
+        <div style="font-size:9px;font-weight:600;color:var(--t3);margin-top:3px">${i===0?'Ibrahim':'Mariyam'}</div>
+      </div>`).join('')}
+    </div>
+  </div>
+  <button class="btn btn-ghost" style="margin-top:16px;width:100%" onclick="shareReferral()">🔗 Grow Your Family Tree — Share Referral Code</button>`;
+}
+
+// ===== AVATAR CUSTOMIZATION =====
+let avatarSettings = JSON.parse(localStorage.getItem('bb_avatar')||'{"color":"#E53935","style":"circle","emoji":"🩸","bg":"#FFF5F5"}');
+function renderAvatarCustom() {
+  const u=currentUser||{name:'Donor'};
+  const initials=(u.name||'D').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const colors=['#E53935','#1565C0','#2E7D32','#E65100','#7B1FA2','#00838F','#F57F17','#4E342E'];
+  const bgs=['#FFF5F5','#E3F2FD','#E8F5E9','#FFF3E0','#F3E5F5','#E0F7FA','#FFFDE7','#EFEBE9'];
+  const emojis=['🩸','❤️','🦸','💎','⚡','🔥','🌟','👑','🏆','🌍','🎯','💪'];
+  const styles=['circle','square','rounded'];
+  return `
+  <div style="background:linear-gradient(135deg,#BE185D,#EC4899,#F9A8D4);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">PERSONALIZE</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">🎨 Avatar Customization</div>
+    <div style="font-size:11px;opacity:.85">Make your donor profile uniquely yours</div>
+  </div>
+  <!-- PREVIEW -->
+  <div class="card" style="margin-bottom:12px;text-align:center">
+    <div id="av-preview" style="width:90px;height:90px;border-radius:${avatarSettings.style==='circle'?'50%':avatarSettings.style==='square'?'8px':'20px'};background:${avatarSettings.color};color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 10px;font-size:28px;font-weight:900;box-shadow:0 8px 24px ${avatarSettings.color}40;border:4px solid ${avatarSettings.bg}">
+      <div>${avatarSettings.emoji}</div>
+      <div style="font-size:14px;margin-top:2px">${initials}</div>
+    </div>
+    <div style="font-size:13px;font-weight:700;color:var(--t)">${u.name}</div>
+    <div style="font-size:10px;color:var(--t3)">Preview of your donor avatar</div>
+  </div>
+  <!-- EMOJI PICKER -->
+  <div class="card" style="margin-bottom:10px">
+    <div class="ct">Choose Icon</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      ${emojis.map(e=>`<div style="width:40px;height:40px;border-radius:10px;background:${avatarSettings.emoji===e?'var(--red)':'var(--s2)'};display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;border:2px solid ${avatarSettings.emoji===e?'var(--red)':'var(--border)'};" onclick="avatarSettings.emoji='${e}';saveAvatar();navigate('avatar')">${e}</div>`).join('')}
+    </div>
+  </div>
+  <!-- COLOR PICKER -->
+  <div class="card" style="margin-bottom:10px">
+    <div class="ct">Background Color</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      ${colors.map((c,i)=>`<div style="width:40px;height:40px;border-radius:50%;background:${c};cursor:pointer;border:3px solid ${avatarSettings.color===c?'var(--t)':'transparent'};box-shadow:${avatarSettings.color===c?'0 0 0 2px '+c:'none'}" onclick="avatarSettings.color='${c}';avatarSettings.bg='${bgs[i]}';saveAvatar();navigate('avatar')"></div>`).join('')}
+    </div>
+  </div>
+  <!-- SHAPE -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">Avatar Shape</div>
+    <div style="display:flex;gap:8px">
+      ${styles.map(s=>`<button style="flex:1;padding:12px;border-radius:10px;border:2px solid ${avatarSettings.style===s?'var(--red)':'var(--border)'};background:${avatarSettings.style===s?'rgba(229,57,53,.08)':'var(--s2)'};cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;color:${avatarSettings.style===s?'var(--red)':'var(--t3)'}" onclick="avatarSettings.style='${s}';saveAvatar();navigate('avatar')">${s==='circle'?'⭕ Circle':s==='square'?'⬛ Square':'🔲 Rounded'}</button>`).join('')}
+    </div>
+  </div>
+  <button class="btn btn-red" onclick="saveAvatar();toast('Avatar saved! 🎨','success')">💾 Save Avatar</button>`;
+}
+function saveAvatar(){localStorage.setItem('bb_avatar',JSON.stringify(avatarSettings));}
+
+// ===== FRIENDS & FOLLOW =====
+let friends=JSON.parse(localStorage.getItem('bb_friends')||'[]');
+let following=JSON.parse(localStorage.getItem('bb_following')||'[]');
+function renderFriends() {
+  const suggestedDonors=GLOBAL_DONORS.slice(0,6);
+  return `
+  <div style="background:linear-gradient(135deg,#1565C0,#1976D2,#42A5F5);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">SOCIAL</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">👥 Friends & Follow</div>
+    <div style="font-size:11px;opacity:.85">Connect with donors, follow heroes, build your donation community</div>
+  </div>
+  <!-- STATS -->
+  <div class="g2" style="margin-bottom:12px">
+    <div class="stat-card" style="text-align:center"><div class="sv" style="font-size:22px">${following.length}</div><div class="sl">Following</div></div>
+    <div class="stat-card" style="text-align:center"><div class="sv" style="font-size:22px">${friends.length}</div><div class="sl">Friends</div></div>
+  </div>
+  <!-- DISCOVER DONORS -->
+  <div style="font-size:13px;font-weight:800;color:var(--t);margin-bottom:10px">🔍 Discover Donors</div>
+  ${suggestedDonors.map(d=>{
+    const c=getCountry(d.country||'MV');
+    const isFollowing=following.includes(d.id);
+    return `<div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)">
+      <div style="width:44px;height:44px;border-radius:50%;background:rgba(229,57,53,.1);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;flex-shrink:0">${(d.name||'?')[0]}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700">${c.flag} ${d.name}</div>
+        <div style="font-size:10px;color:var(--t3)">${d.blood} · ${d.city} · ${d.donations} donations</div>
+      </div>
+      <button style="background:${isFollowing?'var(--s2)':'var(--red)'};color:${isFollowing?'var(--t)':'#fff'};border:1px solid ${isFollowing?'var(--border)':'var(--red)'};border-radius:10px;padding:7px 12px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap" onclick="toggleFollow('${d.id}',this)">${isFollowing?'✓ Following':'+ Follow'}</button>
+    </div>`;
+  }).join('')}`;
+}
+function toggleFollow(id,btn) {
+  if(following.includes(id)){following=following.filter(f=>f!==id);btn.textContent='+ Follow';btn.style.background='var(--red)';btn.style.color='#fff';}
+  else{following.push(id);btn.textContent='✓ Following';btn.style.background='var(--s2)';btn.style.color='var(--t)';}
+  localStorage.setItem('bb_following',JSON.stringify(following));
+  toast(following.includes(id)?'Now following!':'Unfollowed','success');
+}
+
+// ===== COMMUNITY POLLS =====
+let polls=JSON.parse(localStorage.getItem('bb_polls')||JSON.stringify([
+  {id:'p1',question:'What motivates you most to donate blood?',options:['Saving lives','Earning rewards','Community recognition','Doctor recommendation'],votes:[45,23,18,14],myVote:null,active:true},
+  {id:'p2',question:'How often do you donate blood?',options:['Every 3 months','Twice a year','Once a year','First time'],votes:[38,28,20,14],myVote:null,active:true},
+  {id:'p3',question:'Which feature do you use most?',options:['Emergency Alerts','Leaderboard','AI Assistant','Donor Map'],votes:[52,31,28,15],myVote:null,active:true},
+]));
+function renderPolls() {
+  return `
+  <div style="font-size:15px;font-weight:800;color:var(--t);margin-bottom:12px">📊 Community Polls</div>
+  <button class="btn btn-red btn-sm" style="margin-bottom:12px" onclick="toast('Poll creation coming soon!','info')">+ Create Poll</button>
+  ${polls.map(p=>{
+    const total=p.votes.reduce((s,v)=>s+v,0);
+    return `<div class="card" style="margin-bottom:12px">
+      <div style="font-size:13px;font-weight:800;color:var(--t);margin-bottom:12px">📊 ${p.question}</div>
+      ${p.options.map((o,i)=>{
+        const pct=total?Math.round(p.votes[i]/total*100):0;
+        const voted=p.myVote===i;
+        return `<div style="margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--t);margin-bottom:3px">
+            <span>${voted?'✓ ':''}"${o}"</span><span>${pct}% (${p.votes[i]})</span>
+          </div>
+          <div style="height:8px;background:var(--s3);border-radius:4px;overflow:hidden;cursor:pointer" onclick="voteOnPoll('${p.id}',${i})">
+            <div style="height:100%;width:${pct}%;background:${voted?'var(--red)':'#93C5FD'};border-radius:4px;transition:width .4s"></div>
+          </div>
+        </div>`;
+      }).join('')}
+      <div style="font-size:10px;color:var(--t3);margin-top:8px">${total} total votes · ${p.active?'Active':'Closed'}</div>
+    </div>`;
+  }).join('')}`;
+}
+function voteOnPoll(id,optIdx) {
+  const p=polls.find(x=>x.id===id);
+  if(!p||p.myVote!==null){toast('Already voted!','info');return;}
+  p.myVote=optIdx;p.votes[optIdx]++;
+  localStorage.setItem('bb_polls',JSON.stringify(polls));
+  toast('Vote recorded! +5 BB Points','success');
+  navigate('polls');
+}
+
+// ===== BIRTHDAY RECOGNITION =====
+function renderBirthdays() {
+  const today=new Date();
+  const birthdays=[
+    {name:'Ahmed Jinaah',blood:'O+',country:'🇲🇻',bday:'June 3',donations:18,isBday:true},
+    {name:'Fatima Hassan',blood:'B-',country:'🇲🇻',bday:'June 8',donations:12,isBday:false},
+    {name:'Rahul Kumar',blood:'A+',country:'🇮🇳',bday:'June 15',donations:8,isBday:false},
+    {name:'Sara Johnson',blood:'O-',country:'🇬🇧',bday:'June 22',donations:22,isBday:false},
+  ];
+  return `
+  <div style="background:linear-gradient(135deg,#9C27B0,#CE93D8);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">COMMUNITY CARE</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">🎂 Birthday Recognition</div>
+    <div style="font-size:11px;opacity:.85">Celebrate our donor heroes on their special day!</div>
+  </div>
+  ${birthdays.map(b=>`
+  <div style="background:${b.isBday?'linear-gradient(135deg,rgba(156,39,176,.08),rgba(206,147,216,.05))':'#fff'};border:${b.isBday?'2px solid rgba(156,39,176,.4)':'1px solid var(--border)'};border-radius:14px;padding:14px;margin-bottom:8px;box-shadow:var(--shadow)">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:48px;height:48px;border-radius:50%;background:${b.isBday?'linear-gradient(135deg,#9C27B0,#CE93D8)':'rgba(229,57,53,.1)'};color:${b.isBday?'#fff':'var(--red)'};display:flex;align-items:center;justify-content:center;font-size:${b.isBday?'22':'16'}px;font-weight:900;flex-shrink:0">${b.isBday?'🎂':(b.name||'?')[0]}</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="font-size:13px;font-weight:800">${b.country} ${b.name}</div>
+          ${b.isBday?'<span style="font-size:9px;background:rgba(156,39,176,.15);color:#9C27B0;padding:1px 8px;border-radius:10px;font-weight:800">🎉 TODAY!</span>':''}
+        </div>
+        <div style="font-size:10px;color:var(--t3)">${b.blood} · ${b.donations} donations · Birthday: ${b.bday}</div>
+      </div>
+      <button style="background:${b.isBday?'#9C27B0':'var(--s2)'};color:${b.isBday?'#fff':'var(--t)'};border:1px solid ${b.isBday?'#9C27B0':'var(--border)'};border-radius:10px;padding:7px 12px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit" onclick="toast('🎂 Happy Birthday ${b.name}! Thank you for being a hero! 🩸','success')">🎉 Wish</button>
+    </div>
+  </div>`).join('')}
+  <div class="card" style="margin-top:8px">
+    <div class="ct">🎁 Birthday Rewards</div>
+    <div style="font-size:11px;color:var(--t2);line-height:1.6">On your birthday:<br>• +100 bonus XP<br>• Special "Birthday Donor" badge for the day<br>• Featured on the community birthday wall<br>• Birthday donation earns double XP</div>
+  </div>`;
+}
+
+// ===== BLOOD SHORTAGE SIMULATOR =====
+function renderShortageSimulator() {
+  return `
+  <div style="background:linear-gradient(135deg,#7F1D1D,#B91C1C,#EF4444);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">AI SIMULATION</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">🔬 Blood Shortage Simulator</div>
+    <div style="font-size:11px;opacity:.85">Simulate what happens to blood supply under different scenarios</div>
+  </div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">⚙️ Simulation Parameters</div>
+    <div class="form-group"><label>Scenario</label>
+      <select id="sim-scenario">
+        <option value="normal">Normal Month</option>
+        <option value="ramadan">Ramadan Season</option>
+        <option value="disaster">Natural Disaster</option>
+        <option value="pandemic">Pandemic</option>
+        <option value="shortage">Severe Shortage</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Active Donors</label>
+      <select id="sim-donors"><option value="50">50 donors</option><option value="100" selected>100 donors</option><option value="200">200 donors</option><option value="500">500 donors</option></select>
+    </div>
+    <div class="form-group"><label>Hospital Demand</label>
+      <select id="sim-demand"><option value="low">Low (50 units/day)</option><option value="medium" selected>Medium (100 units/day)</option><option value="high">High (200 units/day)</option><option value="critical">Critical (400 units/day)</option></select>
+    </div>
+    <button class="btn btn-red" id="run-sim-btn">🔬 Run Simulation</button>
+  </div>
+  <div id="sim-result" style="display:none"></div>`;
+}
+
+// ===== MALDIVES BLOOD HERO AWARDS =====
+function renderMVAwards() {
+  const awards2026=[
+    {category:'🏆 Grand Blood Hero',winner:'Ahmed Jinaah',blood:'O+',island:'Malé',donations:18,achievement:'Highest donations in Malé — 2026 Champion',icon:'👑'},
+    {category:'🥇 Emergency Hero of the Year',winner:'Fatima Hassan',blood:'B-',island:'Addu City',donations:12,achievement:'Responded to 8 emergency requests in 2026',icon:'🚨'},
+    {category:'🌟 Rising Star',winner:'Ibrahim Rasheed',blood:'A+',island:'Kulhudhuffushi',donations:8,achievement:'Most improved new donor — tripled donations',icon:'⭐'},
+    {category:'🏝️ Island Champion',winner:'Ali Latheef',blood:'O-',island:'Naifaru',donations:15,achievement:'Top donor in Lhaviyani Atoll',icon:'🏝️'},
+    {category:'🤝 Community Builder',winner:'Mariyam Ahmed',blood:'A+',island:'Malé',donations:10,achievement:'Referred 12 new donors to BloodBridge',icon:'👥'},
+    {category:'💎 Rare Blood Champion',winner:'Hassan Shareef',blood:'O-',island:'Malé',donations:20,achievement:'Most rare blood donations in Maldives — O-',icon:'🩸'},
+  ];
+  return `
+  <div style="background:linear-gradient(135deg,#004D40,#00695C,#26A69A);border-radius:20px;padding:20px;margin-bottom:14px;color:#fff">
+    <div style="text-align:center">
+      <div style="font-size:36px;margin-bottom:8px">🇲🇻</div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:.12em;opacity:.8;margin-bottom:4px">REPUBLIC OF MALDIVES</div>
+      <div style="font-size:20px;font-weight:900;margin-bottom:2px">Blood Hero Awards 2026</div>
+      <div style="font-size:11px;opacity:.85">Honoring the heroes who gave blood to save Maldivian lives</div>
+      <div style="font-size:10px;opacity:.7;margin-top:6px">June 14, 2026 · World Blood Donor Day</div>
+    </div>
+  </div>
+  ${awards2026.map((a,i)=>`
+  <div style="background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:10px;box-shadow:var(--shadow)">
+    <div style="background:linear-gradient(135deg,rgba(0,77,64,.1),rgba(38,166,154,.05));padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:12px;font-weight:800;color:#004D40">${a.category}</div>
+      <div style="font-size:20px">${a.icon}</div>
+    </div>
+    <div style="padding:14px;display:flex;align-items:center;gap:12px">
+      <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#004D40,#26A69A);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;flex-shrink:0;box-shadow:0 4px 12px rgba(0,77,64,.3)">${(a.winner||'?')[0]}</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:900;color:var(--t)">${a.winner}</div>
+        <div style="font-size:10px;color:var(--t3);margin-top:1px">🩸 ${a.blood} · 📍 ${a.island} · ${a.donations} donations</div>
+        <div style="font-size:10px;color:#004D40;font-weight:700;background:rgba(0,77,64,.08);border-radius:8px;padding:3px 8px;display:inline-block;margin-top:5px">${a.achievement}</div>
+      </div>
+    </div>
+  </div>`).join('')}
+  <div class="card" style="margin-top:8px;text-align:center;background:linear-gradient(135deg,rgba(0,77,64,.06),rgba(38,166,154,.04));border-color:rgba(0,77,64,.2)">
+    <div style="font-size:14px;font-weight:800;color:#004D40;margin-bottom:6px">Nominate a Blood Hero</div>
+    <div style="font-size:11px;color:var(--t3);margin-bottom:12px">Know someone who deserves recognition? Nominate them for the 2027 awards.</div>
+    <button class="btn btn-red btn-sm" style="background:#004D40;width:100%" onclick="toast('Nomination submitted! Our team will review and contact you.','success')">📝 Submit Nomination</button>
+  </div>`;
+}
+
 function runAIFeature(fnStr, name) {
   try {
     const fn = eval('('+fnStr+')');
@@ -4765,6 +5166,34 @@ setTimeout(()=>{
   document.getElementById('splash').classList.add('hide');
   if(currentUser){showApp();}
   else{document.getElementById('auth-screen').style.display='flex';}
+  // Shortage simulator
+  document.addEventListener('click', function(e) {
+    if(e.target.id==='run-sim-btn') {
+      const scenario=document.getElementById('sim-scenario')?.value||'normal';
+      const donors=+document.getElementById('sim-donors')?.value||100;
+      const demand=document.getElementById('sim-demand')?.value||'medium';
+      const demandUnits={low:50,medium:100,high:200,critical:400}[demand];
+      const donationsPerDay=Math.floor(donors*0.03);
+      const surplusOrDeficit=donationsPerDay*450-demandUnits;
+      const daysToShortage=surplusOrDeficit>0?999:Math.abs(Math.floor(1000/Math.abs(surplusOrDeficit)));
+      const scenarioMultiplier={normal:1,ramadan:0.7,disaster:2.5,pandemic:0.4,shortage:0.3}[scenario];
+      const adjustedDays=Math.floor(daysToShortage/scenarioMultiplier);
+      const el=document.getElementById('sim-result');
+      if(el) {
+        el.style.display='block';
+        el.innerHTML=`<div class="card" style="border-color:${surplusOrDeficit>0?'rgba(22,163,74,.3)':'rgba(229,57,53,.3)'}">
+          <div class="ct" style="color:${surplusOrDeficit>0?'var(--green)':'var(--red)'}">📊 Simulation Results</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+            ${[['Daily Collections',donationsPerDay*450+' ml','#10B981'],['Daily Demand',demandUnits+' units','#EF4444'],['Net Balance',surplusOrDeficit>0?'+'+surplusOrDeficit:surplusOrDeficit,'#F59E0B'],['Days to Critical',adjustedDays>365?'1+ year':adjustedDays+' days',surplusOrDeficit>0?'#10B981':'#EF4444']].map(([l,v,c])=>`<div style="background:var(--s2);border-radius:10px;padding:10px;text-align:center"><div style="font-size:16px;font-weight:900;color:${c}">${v}</div><div style="font-size:9px;color:var(--t3)">${l}</div></div>`).join('')}
+          </div>
+          <div style="font-size:12px;font-weight:700;color:${surplusOrDeficit>0?'var(--green)':'var(--red)'};background:${surplusOrDeficit>0?'#E8F5E9':'rgba(229,57,53,.08)'};border-radius:10px;padding:12px;text-align:center">
+            ${surplusOrDeficit>0?'✅ Blood supply is ADEQUATE under this scenario. Stock is building.':'⚠️ SHORTAGE PREDICTED under this scenario. Recruit '+Math.ceil(Math.abs(surplusOrDeficit)/15)+' more donors immediately.'}
+          </div>
+          <div style="font-size:11px;color:var(--t3);margin-top:8px;padding:8px;background:var(--s2);border-radius:8px">🤖 AI Recommendation: ${surplusOrDeficit>0?'Maintain current donor base. Consider plasma donation drives.':'Launch emergency recruitment campaign. Target '+Math.ceil(Math.abs(surplusOrDeficit)/10)+' new donors in 7 days.'}</div>
+        </div>`;
+      }
+    }
+  });
   // AI page listeners
   document.addEventListener('click', function(e) {
     if(e.target.id==='chat-send-btn'||e.target.closest('#chat-send-btn')) sendChat();
