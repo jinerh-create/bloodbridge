@@ -1897,6 +1897,8 @@ function t(k) { return LANGS[currentLang]?.[k] || LANGS.en[k] || k; }
 function setLang(l) {
   currentLang = l;
   localStorage.setItem('bb_lang', l);
+  const lt = document.getElementById('lang-text');
+  if(lt) lt.textContent = l==='en'?'DV':'EN';
   routeFromHash();
 }
 
@@ -3193,50 +3195,75 @@ function renderPremiumCard(u) {
   if(!u) return '';
   const rank = getRank(u.xp||0);
   const lives = Math.floor((u.donations||0)*2.7);
-  const intlNum = `BB-${String(Math.floor(Math.random()*99999)+10000).padStart(8,'0')}`;
   const score = getDonorScore(u);
-  const streak = getDonationStreak(u);
+  const intlNum = `BB-${(u.id||'GUEST').slice(0,6).toUpperCase().padStart(8,'0')}`;
+  const eligible = true;
 
   return `
-  <div style="perspective:1000px">
-    <!-- FRONT CARD -->
-    <div id="premium-card" style="background:linear-gradient(135deg,#6B0000 0%,#8B0000 25%,#DC143C 55%,#8B0000 80%,#4A0000 100%);border-radius:20px;padding:0;color:#fff;position:relative;overflow:hidden;box-shadow:0 20px 60px rgba(139,0,0,.6),0 0 0 1px rgba(255,255,255,.1);margin-bottom:10px;aspect-ratio:1.586/1;min-height:200px">
-      <!-- METALLIC SHINE -->
-      <div style="position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.08) 50%,transparent 60%);pointer-events:none"></div>
-      <!-- CARD PATTERN -->
-      <div style="position:absolute;right:-20px;bottom:-20px;width:160px;height:160px;border-radius:50%;border:30px solid rgba(255,255,255,.04)"></div>
-      <div style="position:absolute;right:60px;bottom:-60px;width:200px;height:200px;border-radius:50%;border:30px solid rgba(255,255,255,.03)"></div>
-      <!-- TOP ROW -->
-      <div style="position:absolute;top:16px;left:16px;right:16px;display:flex;align-items:center;justify-content:space-between">
+  <style>
+    @keyframes card-shine{0%{transform:translateX(-100%) skewX(-15deg)}100%{transform:translateX(200%) skewX(-15deg)}}
+    .donor-card-shine{position:absolute;top:0;left:0;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);animation:card-shine 3s ease-in-out infinite;pointer-events:none}
+    @keyframes float-card{0%,100%{transform:translateY(0) rotateX(2deg)}50%{transform:translateY(-4px) rotateX(-1deg)}}
+  </style>
+  <div style="perspective:1200px;margin-bottom:12px">
+    <div id="premium-card" style="
+      background:linear-gradient(135deg,#4A0000 0%,#8B0000 20%,#C41A1A 45%,#DC143C 60%,#B22222 80%,#6B0000 100%);
+      border-radius:22px;padding:22px 20px;color:#fff;position:relative;overflow:hidden;
+      box-shadow:0 24px 60px rgba(139,0,0,.5),0 8px 24px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.15);
+      transform-style:preserve-3d;animation:float-card 4s ease-in-out infinite;
+      min-height:200px;border:1px solid rgba(255,255,255,.12)">
+      <!-- ANIMATED SHINE -->
+      <div class="donor-card-shine"></div>
+      <!-- BACKGROUND CIRCLES -->
+      <div style="position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.04);pointer-events:none"></div>
+      <div style="position:absolute;right:20px;bottom:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.03);pointer-events:none"></div>
+      <div style="position:absolute;left:-30px;bottom:-20px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.03);pointer-events:none"></div>
+      <!-- EMB PATTERN -->
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 30px,rgba(255,255,255,.01) 30px,rgba(255,255,255,.01) 31px);pointer-events:none"></div>
+
+      <!-- TOP BAR -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
         <div style="display:flex;align-items:center;gap:8px">
-          <div style="width:32px;height:32px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;backdrop-filter:blur(4px)">🩸</div>
-          <div><div style="font-size:10px;font-weight:800;letter-spacing:.15em">BLOODBRIDGE</div><div style="font-size:7px;opacity:.7;letter-spacing:.08em">DONOR CARD</div></div>
+          <div style="width:36px;height:36px;background:rgba(255,255,255,.18);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2)">🩸</div>
+          <div>
+            <div style="font-size:11px;font-weight:900;letter-spacing:.2em;text-shadow:0 1px 4px rgba(0,0,0,.3)">BLOODBRIDGE</div>
+            <div style="font-size:8px;opacity:.65;letter-spacing:.1em">OFFICIAL DONOR CARD</div>
+          </div>
         </div>
         <div style="text-align:right">
-          <div style="font-size:7px;opacity:.7;letter-spacing:.06em">VERIFIED</div>
-          <div style="font-size:9px;font-weight:800;color:#FFD700">✓ ${rank.emoji} ${rank.name}</div>
+          <div style="background:rgba(255,215,0,.2);border:1px solid rgba(255,215,0,.4);border-radius:8px;padding:3px 8px;display:inline-block">
+            <div style="font-size:9px;font-weight:800;color:#FFD700">${rank.emoji} ${rank.name}</div>
+          </div>
+          <div style="font-size:7px;opacity:.55;margin-top:3px;letter-spacing:.06em">🌍 GLOBAL REGISTRY</div>
         </div>
       </div>
-      <!-- BLOOD GROUP (HUGE) -->
-      <div style="position:absolute;left:16px;top:50%;transform:translateY(-50%)">
-        <div style="font-size:52px;font-weight:900;letter-spacing:-3px;text-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1">${u.bloodGroup||'O+'}</div>
-        <div style="font-size:7px;opacity:.7;letter-spacing:.12em;margin-top:2px">BLOOD TYPE</div>
-      </div>
-      <!-- QR + STATS (right side) -->
-      <div style="position:absolute;right:16px;top:50%;transform:translateY(-50%);text-align:right">
-        <div id="premium-qr" style="background:#fff;border-radius:8px;padding:4px;width:52px;height:52px;margin-left:auto;margin-bottom:6px"></div>
-        <div style="font-size:8px;opacity:.65">${intlNum}</div>
-      </div>
-      <!-- BOTTOM ROW -->
-      <div style="position:absolute;bottom:0;left:0;right:0;padding:10px 16px;background:rgba(0,0,0,.25);backdrop-filter:blur(4px);display:flex;justify-content:space-between;align-items:flex-end">
+
+      <!-- MIDDLE: BLOOD GROUP + QR -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
         <div>
-          <div style="font-size:14px;font-weight:800;letter-spacing:.5px">${u.name}</div>
-          <div style="font-size:8px;opacity:.7;margin-top:1px">${u.island||'Maldives'} · Since ${new Date(u.joinDate||Date.now()).getFullYear()}</div>
+          <div style="font-size:58px;font-weight:900;letter-spacing:-4px;line-height:1;text-shadow:0 6px 24px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.3)">${u.bloodGroup||'—'}</div>
+          <div style="font-size:8px;letter-spacing:.15em;opacity:.65;margin-top:4px">BLOOD TYPE</div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">
-          <div><div style="font-size:13px;font-weight:900">${u.donations||0}</div><div style="font-size:7px;opacity:.7">DONS</div></div>
-          <div><div style="font-size:13px;font-weight:900">${lives}</div><div style="font-size:7px;opacity:.7">LIVES</div></div>
-          <div><div style="font-size:13px;font-weight:900">${score}</div><div style="font-size:7px;opacity:.7">SCORE</div></div>
+        <div style="text-align:center">
+          <div id="premium-qr" style="background:#fff;border-radius:12px;padding:5px;width:60px;height:60px;margin:0 auto 6px;box-shadow:0 4px 12px rgba(0,0,0,.3)"></div>
+          <div style="font-size:7px;opacity:.55;font-family:monospace;letter-spacing:.05em">${intlNum}</div>
+        </div>
+      </div>
+
+      <!-- BOTTOM: NAME + STATS -->
+      <div style="border-top:1px solid rgba(255,255,255,.15);padding-top:14px">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between">
+          <div>
+            <div style="font-size:16px;font-weight:900;letter-spacing:.5px;text-shadow:0 2px 8px rgba(0,0,0,.3)">${u.name}</div>
+            <div style="font-size:9px;opacity:.65;margin-top:2px">📍 ${u.island||'Maldives'} · Since ${new Date(u.joinDate||Date.now()).getFullYear()}</div>
+          </div>
+          <div style="display:flex;gap:12px;text-align:center">
+            <div><div style="font-size:16px;font-weight:900">${u.donations||0}</div><div style="font-size:7px;opacity:.6;letter-spacing:.06em">DONS</div></div>
+            <div style="width:1px;background:rgba(255,255,255,.15)"></div>
+            <div><div style="font-size:16px;font-weight:900">${lives}</div><div style="font-size:7px;opacity:.6;letter-spacing:.06em">LIVES</div></div>
+            <div style="width:1px;background:rgba(255,255,255,.15)"></div>
+            <div><div style="font-size:16px;font-weight:900">${score}</div><div style="font-size:7px;opacity:.6;letter-spacing:.06em">SCORE</div></div>
+          </div>
         </div>
       </div>
     </div>
@@ -5222,7 +5249,13 @@ setTimeout(()=>{
   });
   // Language button
   var langBtn = document.getElementById('lang-btn');
-  if(langBtn) langBtn.addEventListener('click', function(){setLang(currentLang==='en'?'dv':'en');});
+  var langText = document.getElementById('lang-text');
+  if(langText) langText.textContent = currentLang==='en'?'DV':'EN';
+  if(langBtn) langBtn.addEventListener('click', function(){
+    setLang(currentLang==='en'?'dv':'en');
+    var lt=document.getElementById('lang-text');
+    if(lt) lt.textContent=currentLang==='en'?'DV':'EN';
+  });
   // AI page listeners
   document.addEventListener('click', function(e) {
     if(e.target.id==='chat-send-btn'||e.target.closest('#chat-send-btn')) sendChat();
