@@ -660,7 +660,11 @@ function navigate(p){
     'world-rankings':renderWorldRankings, 'future':renderFutureFeatures,
     'ngo-dash':renderNGODash, 'volunteer':renderVolunteer,
     'wallet':renderWallet, 'hospital-ratings':renderHospitalRatings, 'forums':renderForums,
-    'badges':renderBadgesShowcase, 'ai-hub':renderAIHub
+    'badges':renderBadgesShowcase, 'ai-hub':renderAIHub,
+    'maldives':renderMaldivesHub, 'country-challenge':renderCountryChallenge,
+    'health-dash':renderHealthDash, 'gamification':renderGamificationHub,
+    'trading-cards':renderTradingCards, 'unique-features':renderUniqueFeatures,
+    'island-championship':renderIslandChampionship, 'missions':renderMissions
   };
   const fn=renders[p];
   document.getElementById('page').innerHTML=fn?fn():'<div class="empty"><div class="empty-icon">🔍</div><div>Page not found</div></div>';
@@ -793,6 +797,14 @@ function renderHome(){
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('premium-card');setbn('')">💳 My Donor Card</button>
     <button class="btn btn-gold btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('badges');setbn('')">🏅 My Badges</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1;background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(16,185,129,.05));border-color:rgba(99,102,241,.3);color:#6366F1" onclick="navigate('ai-hub');setbn('')">🤖 AI Intelligence Hub</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('maldives');setbn('')">🇲🇻 Maldives Hub</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('country-challenge');setbn('')">🌍 Country Challenge</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('health-dash');setbn('')">💊 Health Dashboard</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('gamification');setbn('')">🎮 Gamification</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('missions');setbn('')">📋 Daily Missions</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('island-championship');setbn('')">🏝️ Island Championship</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('trading-cards');setbn('')">🎴 Blood Hero Cards</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1;background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(124,58,237,.05));border-color:rgba(212,175,55,.3);color:var(--gold)" onclick="navigate('unique-features');setbn('')">⭐ Unique Features</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('emergency-hub');setbn('')">🚨 Emergency Hub</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('community');setbn('')">🌍 Community Hub</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('world-rankings');setbn('')">🏆 World Rankings</button>
@@ -3567,6 +3579,395 @@ function renderAIHub() {
           </div>
         </div>
       </div>`).join('')}
+    </div>
+  </div>`).join('')}`;
+}
+
+// ===== MALDIVES HUB =====
+const ATOLLS = [
+  {code:'AA',name:'Haa Alif',islands:16,donors:12,donations:45},{code:'ADh',name:'Addu',islands:6,donors:8,donations:34},
+  {code:'K',name:'Kaafu (Malé)',islands:20,donors:48,donations:234},{code:'AA2',name:'Haa Dhaalu',islands:17,donors:7,donations:21},
+  {code:'Sh',name:'Shaviyani',islands:15,donors:5,donations:16},{code:'N',name:'Noonu',islands:13,donors:4,donations:12},
+  {code:'R',name:'Raa',islands:15,donors:6,donations:19},{code:'B',name:'Baa',islands:13,donors:5,donations:14},
+  {code:'Lh',name:'Lhaviyani',islands:5,donors:3,donations:9},{code:'V',name:'Vaavu',islands:5,donors:2,donations:6},
+];
+function renderMaldivesHub() {
+  return `
+  <div style="background:linear-gradient(135deg,#004D40,#00695C,#26A69A);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">🇲🇻 MALDIVES SPECIAL</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">Maldives Donor Network</div>
+    <div style="font-size:11px;opacity:.85">Island-by-island blood donation coordination across 26 atolls</div>
+  </div>
+
+  <!-- NATIONAL STATS -->
+  <div class="g2" style="margin-bottom:12px">
+    ${[['🇲🇻','National Donors','48','Active island donors'],['🏝️','Atolls Covered','10','of 26 atolls'],['🩸','This Month','234','Total donations'],['🚤','Inter-Island','12','Transfers completed']].map(([e,l,v,s])=>`<div class="stat-card"><div style="font-size:20px">${e}</div><div class="sv" style="font-size:20px">${v}</div><div class="sl">${l}</div><div style="font-size:9px;color:var(--t3)">${s}</div></div>`).join('')}
+  </div>
+
+  <!-- ATOLL RANKINGS -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">🏝️ Atoll Donation Rankings</div>
+    ${ATOLLS.sort((a,b)=>b.donations-a.donations).map((a,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">
+      <div style="width:24px;font-size:12px;font-weight:900;color:${i<3?'var(--gold)':'var(--t3)'}">#{i+1}</div>
+      <div style="flex:1"><div style="font-size:12px;font-weight:700">${a.name} Atoll</div><div style="font-size:10px;color:var(--t3)">${a.islands} islands · ${a.donors} donors</div></div>
+      <div style="text-align:right"><div style="font-size:14px;font-weight:800;color:var(--red)">${a.donations}</div><div style="font-size:8px;color:var(--t3)">donations</div></div>
+    </div>`).join('')}
+  </div>
+
+  <!-- UNIQUE MALDIVES FEATURES -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">🚤 Maldives-Specific Features</div>
+    ${[
+      ['🚤','Ferry Route Integration','Blood transport scheduling on inter-island ferries'],
+      ['🚁','Air Ambulance Network','Emergency blood delivery via sea plane and helicopter'],
+      ['⛵','Speedboat Coordination','Fast-track blood delivery between nearby atolls'],
+      ['🏝️','Island Emergency Teams','Dedicated volunteer coordinators on each inhabited island'],
+      ['🏨','Resort Donor Network','Tourist and resort staff registered as emergency donors'],
+      ['✈️','Airport Donor Network','Frequent traveler donors registered at key airports'],
+      ['🎣','Fishing Vessel Network','Boat crew donors registered with GPS coordinates'],
+      ['🌴','Tourism Staff Network','Hotel, dive, and resort staff donor database'],
+    ].map(([e,t,d])=>`
+    <div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:18px;flex-shrink:0">${e}</span>
+      <div><div style="font-size:12px;font-weight:700">${t}</div><div style="font-size:10px;color:var(--t3)">${d}</div></div>
+    </div>`).join('')}
+  </div>
+
+  <!-- NATIONAL HEATMAP PLACEHOLDER -->
+  <div class="card">
+    <div class="ct">🗺️ National Donation Heatmap</div>
+    <div style="background:linear-gradient(135deg,rgba(0,77,64,.1),rgba(38,166,154,.05));border:1px dashed rgba(0,77,64,.3);border-radius:12px;padding:20px;text-align:center">
+      <div style="font-size:32px;margin-bottom:8px">🇲🇻</div>
+      <div style="font-size:13px;font-weight:700;color:var(--t)">Maldives Donation Heatmap</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:4px">Top region: Kaafu (Malé) — 234 donations<br>Growing: Addu City — +45% this month</div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="navigate('global-map');setbn('map')">View on Live Map →</button>
+    </div>
+  </div>`;
+}
+
+// ===== COUNTRY vs COUNTRY CHALLENGE =====
+function renderCountryChallenge() {
+  const challenges=[
+    {a:'🇲🇻 Maldives',b:'🇱🇰 Sri Lanka',aDons:234,bDons:198,aLives:632,bLives:535,status:'LIVE',end:'Jun 30'},
+    {a:'🇮🇳 India',b:'🇵🇰 Pakistan',aDons:8400,bDons:6200,aLives:22680,bLives:16740,status:'LIVE',end:'Jun 30'},
+    {a:'🇬🇧 UK',b:'🇦🇺 Australia',aDons:5400,bDons:3600,aLives:14580,bLives:9720,status:'LIVE',end:'Jun 30'},
+    {a:'🇧🇩 Bangladesh',b:'🇳🇵 Nepal',aDons:1200,bDons:890,aLives:3240,bLives:2403,status:'LIVE',end:'Jun 30'},
+  ];
+  return `
+  <div style="background:linear-gradient(135deg,#7F1D1D,#B91C1C,#EF4444);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">GLOBAL COMPETITION</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">🌍 Country vs Country Challenge</div>
+    <div style="font-size:11px;opacity:.85">Nations compete to save the most lives — June 2026 Season</div>
+  </div>
+  ${challenges.map(c=>{
+    const total=c.aDons+c.bDons;
+    const aPct=Math.round(c.aDons/total*100);
+    return `<div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:10px;box-shadow:var(--shadow)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:800">${c.a}</div>
+        <div style="background:rgba(229,57,53,.1);border-radius:10px;padding:3px 10px;font-size:9px;font-weight:800;color:var(--red)">🔴 LIVE · Ends ${c.end}</div>
+        <div style="font-size:13px;font-weight:800">${c.b}</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
+        <span style="font-weight:800;color:var(--red)">${c.aDons.toLocaleString()} dons</span>
+        <span style="font-weight:800;color:var(--blue)">${c.bDons.toLocaleString()} dons</span>
+      </div>
+      <div style="height:10px;background:var(--s3);border-radius:5px;overflow:hidden;margin-bottom:6px;display:flex">
+        <div style="width:${aPct}%;background:var(--red);border-radius:5px 0 0 5px"></div>
+        <div style="width:${100-aPct}%;background:var(--blue);border-radius:0 5px 5px 0"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--t3)">
+        <span>❤️ ${c.aLives.toLocaleString()} lives</span>
+        <span>${aPct>50?c.a.split(' ')[0]+' leading 🏆':'Tied ⚖️'}</span>
+        <span>❤️ ${c.bLives.toLocaleString()} lives</span>
+      </div>
+      <button class="btn btn-red btn-sm" style="width:100%;margin-top:10px" onclick="toast('Vote registered! Donating for your country adds to the score 🩸','success')">🩸 Donate for Your Country</button>
+    </div>`;
+  }).join('')}`;
+}
+
+// ===== HEALTH DASHBOARD =====
+let healthRecords = JSON.parse(localStorage.getItem('bb_health')||'[]');
+function renderHealthDash() {
+  const u=currentUser||{donations:0};
+  const lastRecord=healthRecords[0]||null;
+  return `
+  <div style="background:linear-gradient(135deg,#1B5E20,#388E3C,#66BB6A);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">HEALTH TRACKING</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">💊 Health Dashboard</div>
+    <div style="font-size:11px;opacity:.85">Track your health metrics for safer, better donations</div>
+  </div>
+
+  <!-- LOG HEALTH -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">📊 Log Today's Metrics</div>
+    <div class="fr2">
+      <div class="form-group"><label>Hemoglobin (g/dL)</label><input type="number" id="h-hemo" placeholder="e.g. 14.5" step="0.1"></div>
+      <div class="form-group"><label>Blood Pressure</label><input id="h-bp" placeholder="120/80"></div>
+    </div>
+    <div class="fr2">
+      <div class="form-group"><label>Weight (kg)</label><input type="number" id="h-weight" placeholder="65"></div>
+      <div class="form-group"><label>Iron Level</label><select id="h-iron"><option>Normal</option><option>Low</option><option>High</option></select></div>
+    </div>
+    <div class="form-group"><label>How do you feel?</label>
+      <select id="h-feel"><option value="great">😄 Great</option><option value="good">🙂 Good</option><option value="ok">😐 OK</option><option value="tired">😴 Tired</option><option value="sick">🤒 Unwell</option></select>
+    </div>
+    <button class="btn btn-red" onclick="saveHealth()">💊 Save Health Record</button>
+  </div>
+
+  <!-- METRICS CARDS -->
+  <div class="g2" style="margin-bottom:12px">
+    ${[
+      ['🩸','Hemoglobin',lastRecord?.hemo||'—','g/dL',lastRecord?.hemo>=13.5?'Normal ✓':'Log to check'],
+      ['💓','Blood Pressure',lastRecord?.bp||'—','mmHg','Normal range: 90-140/60-90'],
+      ['⚖️','Weight',lastRecord?.weight||'—','kg',u.donations>=1?'Minimum 50kg ✓':'Must be ≥50kg'],
+      ['🌡️','Iron Level',lastRecord?.iron||'—','','Impacts recovery time'],
+    ].map(([e,l,v,u2,n])=>`<div class="stat-card">
+      <div style="font-size:20px">${e}</div>
+      <div style="font-size:20px;font-weight:900;color:var(--t)">${v}</div>
+      <div class="sl">${l}${u2?' ('+u2+')':''}</div>
+      <div style="font-size:9px;color:var(--green);margin-top:2px">${n}</div>
+    </div>`).join('')}
+  </div>
+
+  <!-- HEALTH HISTORY -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">📋 Health History</div>
+    ${healthRecords.length?healthRecords.slice(0,5).map(r=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="font-size:18px">${r.feel==='great'?'😄':r.feel==='good'?'🙂':r.feel==='ok'?'😐':r.feel==='tired'?'😴':'🤒'}</div>
+      <div style="flex:1"><div style="font-size:12px;font-weight:600">${r.date}</div><div style="font-size:10px;color:var(--t3)">Hb: ${r.hemo||'—'} · BP: ${r.bp||'—'} · ${r.weight||'—'}kg</div></div>
+      <div style="font-size:10px;font-weight:700;color:${r.hemo>=13.5?'var(--green)':'var(--gold)'}">${r.iron||'Normal'} Iron</div>
+    </div>`).join(''):`<div style="text-align:center;padding:16px;color:var(--t3);font-size:12px">No health records yet. Log your first record above!</div>`}
+  </div>
+
+  <!-- AI HEALTH ADVICE -->
+  <div class="card" style="background:linear-gradient(135deg,rgba(22,163,74,.06),rgba(16,185,129,.04));border-color:rgba(22,163,74,.2)">
+    <div class="ct" style="color:#16A34A">🤖 AI Health Recommendations</div>
+    ${['🥩 Eat iron-rich foods: red meat, spinach, lentils, beans','💧 Drink 8+ glasses of water daily, especially before donation','😴 Get 7-8 hours of sleep before your donation day','🚫 Avoid alcohol 24 hours before donating','🏃 Light exercise is OK — avoid intense workouts day before','🍎 Vitamin C helps iron absorption — eat citrus fruits'].map(r=>`<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;color:var(--t);font-weight:500">${r}</div>`).join('')}
+  </div>`;
+}
+
+function saveHealth() {
+  const record={date:new Date().toLocaleDateString(),hemo:document.getElementById('h-hemo')?.value,bp:document.getElementById('h-bp')?.value,weight:document.getElementById('h-weight')?.value,iron:document.getElementById('h-iron')?.value||'Normal',feel:document.getElementById('h-feel')?.value||'good'};
+  healthRecords.unshift(record);
+  localStorage.setItem('bb_health',JSON.stringify(healthRecords));
+  toast('Health record saved! 💊','success');
+  navigate('health-dash');
+}
+
+// ===== GAMIFICATION HUB =====
+function renderGamificationHub() {
+  const u=currentUser||{xp:0,donations:0,badges:[]};
+  const rank=getRank(u.xp||0);
+  const score=getDonorScore(u);
+  const streak=getDonationStreak(u);
+  return `
+  <div style="background:linear-gradient(135deg,#4C1D95,#7C3AED,#A855F7);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">GAME CENTER</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">🎮 Gamification Hub</div>
+    <div style="font-size:11px;opacity:.85">Level up, earn rewards, compete globally, become a Blood Hero</div>
+  </div>
+
+  <!-- PLAYER CARD -->
+  <div style="background:linear-gradient(135deg,#1E1B4B,#4338CA,#6366F1);border-radius:16px;padding:16px;margin-bottom:12px;color:#fff">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+      <div style="width:54px;height:54px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;border:2px solid rgba(255,255,255,.4)">${(u.name||'D')[0]}</div>
+      <div>
+        <div style="font-size:15px;font-weight:900">${u.name||'Donor'}</div>
+        <div style="font-size:11px;opacity:.8">${rank.emoji} ${rank.name} · Level ${Math.floor((u.xp||0)/100)+1}</div>
+      </div>
+      <div style="margin-left:auto;text-align:right">
+        <div style="font-size:22px;font-weight:900">${score}</div>
+        <div style="font-size:9px;opacity:.7">HERO SCORE</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;padding-top:10px;border-top:1px solid rgba(255,255,255,.2)">
+      <div><div style="font-size:18px;font-weight:900">${u.xp||0}</div><div style="font-size:8px;opacity:.7">XP</div></div>
+      <div><div style="font-size:18px;font-weight:900">${u.donations||0}</div><div style="font-size:8px;opacity:.7">DONS</div></div>
+      <div><div style="font-size:18px;font-weight:900">${streak}</div><div style="font-size:8px;opacity:.7">STREAK</div></div>
+      <div><div style="font-size:18px;font-weight:900">${u.badges?.length||0}</div><div style="font-size:8px;opacity:.7">BADGES</div></div>
+    </div>
+  </div>
+
+  <!-- QUICK ACCESS -->
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px">
+    ${[['🏅','Badges','navigate(\'badges\')'],['📋','Daily Missions','navigate(\'missions\')'],['🏆','Leaderboard','navigate(\'leaderboard\');setbn(\'rank\')'],['🎴','Trading Cards','navigate(\'trading-cards\')'],['🏝️','Island Champ','navigate(\'island-championship\')'],['🌍','Country Battle','navigate(\'country-challenge\')']].map(([e,l,fn])=>`<button style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:var(--shadow)" onclick="${fn}"><span style="font-size:22px">${e}</span><span style="font-size:11px;font-weight:700;color:var(--t)">${l}</span></button>`).join('')}
+  </div>
+
+  <!-- SEASONAL EVENT -->
+  <div style="background:linear-gradient(135deg,#D97706,#F59E0B,#FDE68A);border-radius:14px;padding:14px;margin-bottom:12px;color:#fff">
+    <div style="font-size:11px;font-weight:800;opacity:.8;margin-bottom:4px">🔥 ACTIVE SEASON</div>
+    <div style="font-size:15px;font-weight:900;margin-bottom:4px">Blood Warrior Season — June 2026</div>
+    <div style="font-size:11px;opacity:.9;margin-bottom:10px">Donate 3 times this month to earn the Blood Warrior seasonal badge + 500 bonus XP!</div>
+    <div style="height:6px;background:rgba(255,255,255,.3);border-radius:3px;overflow:hidden;margin-bottom:4px">
+      <div style="height:100%;width:${Math.min((u.donations||0)/3*100,100)}%;background:#fff;border-radius:3px"></div>
+    </div>
+    <div style="font-size:10px;opacity:.8">${u.donations||0}/3 donations this season · ${Math.max(0,3-(u.donations||0))} more needed</div>
+  </div>
+
+  <!-- SECRET ACHIEVEMENTS -->
+  <div class="card">
+    <div class="ct">🔮 Secret Achievements</div>
+    ${['🌙 Night Hero — Donate between 10PM-6AM','⚡ Speed Donor — Respond to emergency in <10 min','🎯 Precise — Donate exactly on eligible day','👥 Social Star — Refer 10 donors','🌍 Globetrotter — Donate in 2 different countries','💎 Perfect Year — Donate every 3 months for 1 full year'].map(a=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-size:16px">🔒</span><div style="font-size:11px;color:var(--t3)">${a}</div></div>`).join('')}
+  </div>`;
+}
+
+// ===== DAILY MISSIONS =====
+function renderMissions() {
+  const u=currentUser||{donations:0,xp:0};
+  const missions={
+    daily:[
+      {emoji:'📱',title:'Log in today',reward:'+5 XP',done:true},
+      {emoji:'🩸',title:'Check blood requests',reward:'+10 XP',done:requests.length>0},
+      {emoji:'💬',title:'Post in community',reward:'+15 XP',done:false},
+      {emoji:'🌍',title:'Share BloodBridge with 1 person',reward:'+20 XP',done:false},
+    ],
+    weekly:[
+      {emoji:'🩸',title:'Log 1 donation this week',reward:'+100 XP',done:(u.donations||0)>0},
+      {emoji:'🚨',title:'Respond to 1 emergency',reward:'+200 XP',done:false},
+      {emoji:'👥',title:'Refer 1 new donor',reward:'+50 XP',done:false},
+      {emoji:'⛺',title:'Register for a donation camp',reward:'+25 XP',done:false},
+    ],
+    monthly:[
+      {emoji:'🏆',title:'Donate blood 2 times this month',reward:'+300 XP + Badge',done:(u.donations||0)>=2},
+      {emoji:'🌟',title:'Reach top 10 in leaderboard',reward:'+500 XP',done:false},
+      {emoji:'🔗',title:'Refer 3 donors this month',reward:'+150 XP',done:false},
+    ]
+  };
+  function missionBlock(title, list) {
+    const done=list.filter(m=>m.done).length;
+    return `<div class="card" style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="ct" style="margin-bottom:0">${title}</div>
+        <div style="font-size:11px;font-weight:700;color:var(--green)">${done}/${list.length} done</div>
+      </div>
+      ${list.map(m=>`<div style="display:flex;align-items:center;gap:10px;padding:10px;background:${m.done?'rgba(22,163,74,.06)':'var(--s2)'};border:1px solid ${m.done?'rgba(22,163,74,.2)':'var(--border)'};border-radius:10px;margin-bottom:6px">
+        <span style="font-size:20px;flex-shrink:0">${m.done?'✅':m.emoji}</span>
+        <div style="flex:1"><div style="font-size:12px;font-weight:700;color:var(--t);${m.done?'text-decoration:line-through;opacity:.6':''}">${m.title}</div><div style="font-size:10px;font-weight:700;color:var(--gold)">${m.reward}</div></div>
+        ${!m.done?`<button class="btn btn-red btn-sm" onclick="toast('Mission started! Complete it to earn the reward.','info')">Start</button>`:''}
+      </div>`).join('')}
+    </div>`;
+  }
+  return `
+  <div style="background:linear-gradient(135deg,#BE185D,#DB2777,#F472B6);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">MISSIONS</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">📋 Daily Missions</div>
+    <div style="font-size:11px;opacity:.85">Complete missions to earn XP, badges, and rewards</div>
+  </div>
+  ${missionBlock('🌅 Daily Missions',missions.daily)}
+  ${missionBlock('📅 Weekly Missions',missions.weekly)}
+  ${missionBlock('🏆 Monthly Challenges',missions.monthly)}`;
+}
+
+// ===== ISLAND CHAMPIONSHIP =====
+function renderIslandChampionship() {
+  const islands=[{name:'Malé',atoll:'Kaafu',donations:234,rank:1},{name:'Addu City',atoll:'Seenu',donations:89,rank:2},{name:'Kulhudhuffushi',atoll:'Haa Dhaalu',donations:45,rank:3},{name:'Fuvahmulah',atoll:'Gnaviyani',donations:34,rank:4},{name:'Naifaru',atoll:'Lhaviyani',donations:28,rank:5}];
+  return `
+  <div style="background:linear-gradient(135deg,#0C4A6E,#0369A1,#38BDF8);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">🏝️ MALDIVES EXCLUSIVE</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">Island vs Island Championship</div>
+    <div style="font-size:11px;opacity:.85">Which island saves the most lives? June 2026 Season</div>
+  </div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="ct">🏆 Island Rankings — June 2026</div>
+    ${islands.map((is,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:12px;background:${i===0?'rgba(212,175,55,.08)':'var(--s2)'};border:1px solid ${i===0?'rgba(212,175,55,.3)':'var(--border)'};border-radius:12px;margin-bottom:6px">
+      <div style="width:32px;height:32px;border-radius:50%;background:${i===0?'linear-gradient(135deg,#D4AF37,#B8860B)':i===1?'linear-gradient(135deg,#9CA3AF,#6B7280)':i===2?'linear-gradient(135deg,#CD7F32,#8B4513)':'var(--s3)'};color:${i<3?'#fff':'var(--t3)'};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex-shrink:0">${is.rank}</div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:800">${is.name}</div><div style="font-size:10px;color:var(--t3)">${is.atoll} Atoll</div></div>
+      <div style="text-align:right"><div style="font-size:16px;font-weight:900;color:var(--red)">${is.donations}</div><div style="font-size:8px;color:var(--t3)">donations</div></div>
+    </div>`).join('')}
+    <button class="btn btn-red" style="margin-top:10px" onclick="toast('Donate to boost your island\'s ranking! 🏝️','success')">🩸 Donate for Your Island</button>
+  </div>
+  <div class="card">
+    <div class="ct">⚡ Championship Rules</div>
+    ${['🗓️ Season: June 1-30, 2026','🩸 Each donation = 1 point for your island','🏆 Top 3 islands win the Championship Trophy','👑 Most donations island = Island Champion title','🌟 Individual top donor = Island Donor of the Month','🎁 Prize: Champion badge + Feature on BloodBridge homepage'].map(r=>`<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;color:var(--t)">${r}</div>`).join('')}
+  </div>`;
+}
+
+// ===== BLOOD HERO TRADING CARDS =====
+function renderTradingCards() {
+  const u=currentUser||{name:'Guest',bloodGroup:'O+',xp:0,donations:0};
+  const rank=getRank(u.xp||0);
+  const cards=[
+    {rarity:'Legendary',color:'#D4AF37',bg:'linear-gradient(135deg,#78350F,#D97706,#FDE68A)',emoji:'👑',name:u.name,type:u.bloodGroup||'O+',power:98,speed:95,lives:Math.floor((u.donations||0)*2.7),special:'Golden Heart',glow:'rgba(212,175,55,.7)'},
+    {rarity:'Epic',color:'#9333EA',bg:'linear-gradient(135deg,#4C1D95,#7C3AED,#C084FC)',emoji:'⚡',name:'Blood Warrior',type:'O-',power:92,speed:88,lives:243,special:'Emergency Master',glow:'rgba(147,51,234,.6)'},
+    {rarity:'Rare',color:'#2563EB',bg:'linear-gradient(135deg,#1E3A5F,#2563EB,#93C5FD)',emoji:'🌊',name:'Lifesaver Pro',type:'A+',power:78,speed:82,lives:156,special:'Night Hero',glow:'rgba(37,99,235,.5)'},
+    {rarity:'Common',color:'#059669',bg:'linear-gradient(135deg,#064E3B,#059669,#6EE7B7)',emoji:'🌱',name:'New Hero',type:'B+',power:55,speed:60,lives:12,special:'First Drop',glow:'rgba(5,150,105,.4)'},
+  ];
+  return `
+  <div style="background:linear-gradient(135deg,#1E1B4B,#4338CA,#7C3AED);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">COLLECTIBLES</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">🎴 Blood Hero Trading Cards</div>
+    <div style="font-size:11px;opacity:.85">Collect unique cards for your donations — trade, showcase, and earn</div>
+  </div>
+
+  <!-- YOUR CARD -->
+  <div style="font-size:13px;font-weight:800;color:var(--t);margin-bottom:10px">Your Card</div>
+  <div style="background:${cards[0].bg};border-radius:20px;padding:20px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;box-shadow:0 8px 32px ${cards[0].glow};aspect-ratio:.714/1;max-width:260px;margin-left:auto;margin-right:auto">
+    <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.1) 0%,transparent 40%)"></div>
+    <div style="font-size:9px;font-weight:800;letter-spacing:.15em;opacity:.8;margin-bottom:6px">BLOODBRIDGE HERO · ${cards[0].rarity.toUpperCase()}</div>
+    <div style="font-size:42px;margin-bottom:4px">${cards[0].emoji}</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">${cards[0].name}</div>
+    <div style="background:rgba(255,255,255,.2);border-radius:8px;padding:4px 10px;display:inline-block;font-size:16px;font-weight:900;margin-bottom:10px">${cards[0].type}</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:10px">
+      ${[['💪',cards[0].power,'Power'],['⚡',cards[0].speed,'Speed'],['❤️',cards[0].lives,'Lives']].map(([e,v,l])=>`<div style="background:rgba(0,0,0,.2);border-radius:8px;padding:6px;text-align:center"><div style="font-size:8px;opacity:.7">${e} ${l}</div><div style="font-size:15px;font-weight:900">${v}</div></div>`).join('')}
+    </div>
+    <div style="font-size:9px;background:rgba(255,255,255,.15);border-radius:8px;padding:4px 10px;text-align:center;font-weight:700">Special: ${cards[0].special}</div>
+  </div>
+
+  <!-- CARD COLLECTION -->
+  <div style="font-size:13px;font-weight:800;color:var(--t);margin-bottom:10px">Card Collection (${cards.length}/∞)</div>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+    ${cards.map(c=>`
+    <div style="background:${c.bg};border-radius:14px;padding:14px;color:#fff;box-shadow:0 4px 16px ${c.glow};position:relative;overflow:hidden">
+      <div style="font-size:8px;font-weight:800;letter-spacing:.1em;opacity:.7;margin-bottom:4px">${c.rarity}</div>
+      <div style="font-size:28px;margin-bottom:4px">${c.emoji}</div>
+      <div style="font-size:13px;font-weight:900;margin-bottom:2px">${c.name}</div>
+      <div style="font-size:16px;font-weight:900;background:rgba(255,255,255,.2);border-radius:6px;padding:2px 8px;display:inline-block;margin-bottom:6px">${c.type}</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;font-size:8px;text-align:center">
+        <div style="background:rgba(0,0,0,.2);border-radius:6px;padding:4px"><div>💪</div><div>${c.power}</div></div>
+        <div style="background:rgba(0,0,0,.2);border-radius:6px;padding:4px"><div>⚡</div><div>${c.speed}</div></div>
+        <div style="background:rgba(0,0,0,.2);border-radius:6px;padding:4px"><div>❤️</div><div>${c.lives}</div></div>
+      </div>
+    </div>`).join('')}
+  </div>
+  <button class="btn btn-ghost" style="margin-top:12px" onclick="toast('New card earned! Keep donating to unlock Legendary cards 🎴','success')">🎴 Earn New Card by Donating</button>`;
+}
+
+// ===== UNIQUE FEATURES =====
+function renderUniqueFeatures() {
+  const features=[
+    {icon:'🏝️',title:'Island vs Island Donation Championship',desc:'Maldivian islands compete monthly for the Blood Champion title. Track your island\'s ranking in real-time.',unique:'⭐ Found only on BloodBridge',action:'island-championship'},
+    {icon:'🌍',title:'Country vs Country Blood Challenge',desc:'Nations compete to save the most lives. Watch live as your country battles others for the global championship.',unique:'⭐ Found only on BloodBridge',action:'country-challenge'},
+    {icon:'🎴',title:'Blood Hero Trading Cards',desc:'NFT-style collectible cards for every milestone. Your card\'s power stats reflect your real donation history.',unique:'⭐ Found only on BloodBridge',action:'trading-cards'},
+    {icon:'🤖',title:'AI Emergency Matching Engine',desc:'Our AI finds the nearest, fastest, and best-matched donor in under 3 seconds for any blood type.',unique:'⭐ World-class AI matching',action:'ai-matching'},
+    {icon:'🚤',title:'Ferry & Speedboat Blood Transport',desc:'Integrated Maldives ferry and speedboat schedules for blood transport between islands.',unique:'⭐ Maldives exclusive',action:'maldives'},
+    {icon:'⛓️',title:'Blockchain Donation Verification',desc:'Every donation is permanently recorded on a public blockchain. Fraud-proof donor history forever.',unique:'⭐ No other blood app has this',action:'advanced'},
+    {icon:'🌐',title:'Global Rare Blood Emergency Network',desc:'A dedicated network of ultra-rare blood donors (Rh-null, Bombay, AB-) who respond to international emergencies.',unique:'⭐ Life-critical global network',action:'rare-registry'},
+    {icon:'🏛️',title:'Blood Hero Hall of Fame',desc:'Permanent recognition for top donors — your name and story featured on the BloodBridge Hall of Fame.',unique:'⭐ Digital legacy for donors',action:'community'},
+    {icon:'📊',title:'National Donation Heatmap',desc:'Real-time visual map showing donation activity across every island, atoll, and country.',unique:'⭐ Government-grade analytics',action:'global-analytics'},
+    {icon:'❤️','title':'Life Saved Counter (Real-time)',desc:'Every donation instantly updates your "Lives Saved" counter. See the real impact of each donation.',unique:'⭐ Emotional, motivating, unique',action:'profile'},
+    {icon:'🎮',title:'Donation XP + Seasonal Leagues',desc:'XP system with seasonal events — Blood Warrior Season, Hero Season, Lifeline Season — each with exclusive rewards.',unique:'⭐ Gaming meets blood donation',action:'gamification'},
+    {icon:'🏢',title:'Corporate Blood Donation League',desc:'Companies compete for the most employee donations. CSR recognized, data tracked, certificates issued.',unique:'⭐ First of its kind',action:'corporate'},
+  ];
+  return `
+  <div style="background:linear-gradient(135deg,#78350F,#D97706,#FDE68A);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">EXCLUSIVE TO BLOODBRIDGE</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">⭐ Unique Features</div>
+    <div style="font-size:11px;opacity:.85">12 features you won't find in any other blood donation app in the world</div>
+  </div>
+  ${features.map((f,i)=>`
+  <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:8px;box-shadow:var(--shadow)">
+    <div style="display:flex;gap:12px;align-items:flex-start">
+      <div style="width:44px;height:44px;border-radius:14px;background:rgba(212,175,55,.1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;border:1px solid rgba(212,175,55,.3)">${f.icon}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:800;color:var(--t);margin-bottom:3px">${i+1}. ${f.title}</div>
+        <div style="font-size:11px;color:var(--t3);line-height:1.4;margin-bottom:6px">${f.desc}</div>
+        <div style="font-size:9px;font-weight:800;color:var(--gold);background:rgba(212,175,55,.1);border-radius:8px;padding:2px 8px;display:inline-block;margin-bottom:8px">${f.unique}</div>
+        <button style="width:100%;background:var(--red);color:#fff;border:none;border-radius:8px;padding:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit" onclick="navigate('${f.action}')">→ Open Feature</button>
+      </div>
     </div>
   </div>`).join('')}`;
 }
