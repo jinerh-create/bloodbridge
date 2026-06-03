@@ -647,7 +647,8 @@ function navigate(p){
     'ai-matching':renderAIMatchingPage, 'global-map':renderGlobalMap,
     'donor-track':renderDonorTrack, 'blood-directory':renderBloodDirectory,
     'global-registry':renderGlobalRegistry, 'vision':renderVision,
-    'verify':renderVerification, 'campaigns':renderCampaigns
+    'verify':renderVerification, 'campaigns':renderCampaigns,
+    'advanced':renderAdvancedFeatures
   };
   const fn=renders[p];
   document.getElementById('page').innerHTML=fn?fn():'<div class="empty"><div class="empty-icon">🔍</div><div>Page not found</div></div>';
@@ -769,6 +770,7 @@ function renderHome(){
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('verify');setbn('')">✅ Donor Verification</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px" onclick="navigate('campaigns');setbn('')">📢 Campaigns</button>
     <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1" onclick="navigate('vision');setbn('')">🌟 Our Vision</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;padding:14px;grid-column:1/-1;background:linear-gradient(135deg,rgba(124,58,237,.08),rgba(37,99,235,.05));border-color:rgba(124,58,237,.3);color:var(--purple)" onclick="navigate('advanced');setbn('')">⚡ Advanced Features</button>
   </div>
 
   <div class="sec-hdr"><div class="sec-title">🌟 Community</div><button class="sec-link" onclick="navigate('community')">See All</button></div>
@@ -3056,6 +3058,116 @@ function renderCampaigns() {
       </div>
     </div>`;
   }).join('')}`;
+}
+
+// ===== ADVANCED FEATURES =====
+function renderAdvancedFeatures() {
+  const features = [
+    {icon:'⛓️',title:'Blockchain Donation Verification',status:'beta',color:'#7C3AED',desc:'Every donation is hashed on a public blockchain, creating an immutable record. Hospitals and donors can verify any donation instantly with a scan.',actions:['View Blockchain','Verify Donation']},
+    {icon:'🚁',title:'Blood Transport Tracking',status:'live',color:'#2196F3',desc:'Real-time GPS tracking of blood units from donation center to hospital. Track temperature, location, and ETA of your blood unit.',actions:['Track Shipment','View History']},
+    {icon:'🚁',title:'Drone Delivery Tracking',status:'coming',color:'#FF9800',desc:'Partnering with drone delivery companies to rush blood units to remote islands in the Maldives and remote areas globally in under 15 minutes.',actions:['Learn More','Register Location']},
+    {icon:'⌚',title:'Smartwatch Integration',status:'beta',color:'#43A047',desc:'Your donation history, health metrics, and eligibility countdown sync automatically with Apple Watch and Wear OS devices.',actions:['Connect Watch','View Health']},
+    {icon:'🍎',title:'Apple Health Integration',status:'live',color:'#000000',desc:'BloodBridge reads your Apple Health data (hemoglobin, heart rate, weight) to calculate your donation eligibility score automatically.',actions:['Connect Health','Sync Now']},
+    {icon:'🏃',title:'Google Fit Integration',status:'live',color:'#4CAF50',desc:'Sync your fitness data from Google Fit to improve your donor health score and get personalized donation readiness insights.',actions:['Connect Fit','View Score']},
+    {icon:'🏥',title:'Electronic Medical Records (EMR)',status:'coming',color:'#E53935',desc:'Hospitals can securely access your donation history and blood reports through our HIPAA-compliant EMR integration with major hospital systems.',actions:['Learn More','Request Access']},
+    {icon:'🔌',title:'Hospital API',status:'live',color:'#2196F3',desc:'Hospitals can integrate BloodBridge directly into their management systems via our REST API. Real-time donor matching, inventory management, and request broadcasting.',actions:['API Docs','Request Key']},
+    {icon:'🏢',title:'Corporate CSR Dashboard',status:'live',color:'#FF9800',desc:'Companies can manage employee donation drives, track CSR impact, generate reports, and earn Corporate Hero status for their organization.',actions:['View Dashboard','Register Company']},
+    {icon:'📊',title:'National Analytics Portal',status:'beta',color:'#9C27B0',desc:'Government health ministries and national blood services can access real-time analytics on donation rates, blood shortages, and demographic trends.',actions:['Request Access','View Demo']},
+  ];
+
+  return `
+  <div style="background:linear-gradient(135deg,#312E81,#7C3AED,#9333EA);border-radius:20px;padding:18px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden">
+    <div style="position:absolute;right:-10px;top:-10px;font-size:80px;opacity:.1">⚡</div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:4px">TECHNOLOGY</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:2px">Advanced Features</div>
+    <div style="font-size:11px;opacity:.85">Cutting-edge technology powering the future of blood donation</div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <span style="background:rgba(255,255,255,.2);border-radius:10px;padding:3px 10px;font-size:9px;font-weight:700">🟢 4 LIVE</span>
+      <span style="background:rgba(255,255,255,.2);border-radius:10px;padding:3px 10px;font-size:9px;font-weight:700">🔵 3 BETA</span>
+      <span style="background:rgba(255,255,255,.2);border-radius:10px;padding:3px 10px;font-size:9px;font-weight:700">🟡 3 COMING</span>
+    </div>
+  </div>
+
+  ${features.map(f=>`
+  <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:10px;box-shadow:var(--shadow);border-left:4px solid ${f.color}">
+    <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px">
+      <div style="width:44px;height:44px;border-radius:12px;background:${f.color}15;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${f.icon}</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          <div style="font-size:13px;font-weight:800;color:var(--t)">${f.title}</div>
+          <span style="font-size:9px;padding:1px 8px;border-radius:10px;font-weight:700;background:${f.status==='live'?'#E8F5E9':f.status==='beta'?'#E3F2FD':'#FFF8E1'};color:${f.status==='live'?'#2E7D32':f.status==='beta'?'#1565C0':'#E65100'}">${f.status==='live'?'🟢 LIVE':f.status==='beta'?'🔵 BETA':'🟡 COMING'}</span>
+        </div>
+        <div style="font-size:11px;color:var(--t3);line-height:1.5">${f.desc}</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px">
+      ${f.actions.map((a,i)=>`<button style="flex:1;background:${i===0?f.color:'var(--s2)'};color:${i===0?'#fff':'var(--t)'};border:${i===0?'none':'1px solid var(--border)'};border-radius:8px;padding:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit" onclick="toast('${a} — coming soon!','info')">${a}</button>`).join('')}
+    </div>
+  </div>`).join('')}`;
+}
+
+// ===== PREMIUM DONOR CARD =====
+function renderPremiumCard(u) {
+  if(!u) return '';
+  const rank = getRank(u.xp||0);
+  const lives = Math.floor((u.donations||0)*2.7);
+  const intlNum = `BB-${String(Math.floor(Math.random()*99999)+10000).padStart(8,'0')}`;
+  const score = getDonorScore(u);
+  const streak = getDonationStreak(u);
+
+  return `
+  <div style="perspective:1000px">
+    <!-- FRONT CARD -->
+    <div id="premium-card" style="background:linear-gradient(135deg,#6B0000 0%,#8B0000 25%,#DC143C 55%,#8B0000 80%,#4A0000 100%);border-radius:20px;padding:0;color:#fff;position:relative;overflow:hidden;box-shadow:0 20px 60px rgba(139,0,0,.6),0 0 0 1px rgba(255,255,255,.1);margin-bottom:10px;aspect-ratio:1.586/1;min-height:200px">
+      <!-- METALLIC SHINE -->
+      <div style="position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.08) 50%,transparent 60%);pointer-events:none"></div>
+      <!-- CARD PATTERN -->
+      <div style="position:absolute;right:-20px;bottom:-20px;width:160px;height:160px;border-radius:50%;border:30px solid rgba(255,255,255,.04)"></div>
+      <div style="position:absolute;right:60px;bottom:-60px;width:200px;height:200px;border-radius:50%;border:30px solid rgba(255,255,255,.03)"></div>
+      <!-- TOP ROW -->
+      <div style="position:absolute;top:16px;left:16px;right:16px;display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:32px;height:32px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;backdrop-filter:blur(4px)">🩸</div>
+          <div><div style="font-size:10px;font-weight:800;letter-spacing:.15em">BLOODBRIDGE</div><div style="font-size:7px;opacity:.7;letter-spacing:.08em">DONOR CARD</div></div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:7px;opacity:.7;letter-spacing:.06em">VERIFIED</div>
+          <div style="font-size:9px;font-weight:800;color:#FFD700">✓ ${rank.emoji} ${rank.name}</div>
+        </div>
+      </div>
+      <!-- BLOOD GROUP (HUGE) -->
+      <div style="position:absolute;left:16px;top:50%;transform:translateY(-50%)">
+        <div style="font-size:52px;font-weight:900;letter-spacing:-3px;text-shadow:0 4px 20px rgba(0,0,0,.4);line-height:1">${u.bloodGroup||'O+'}</div>
+        <div style="font-size:7px;opacity:.7;letter-spacing:.12em;margin-top:2px">BLOOD TYPE</div>
+      </div>
+      <!-- QR + STATS (right side) -->
+      <div style="position:absolute;right:16px;top:50%;transform:translateY(-50%);text-align:right">
+        <div id="premium-qr" style="background:#fff;border-radius:8px;padding:4px;width:52px;height:52px;margin-left:auto;margin-bottom:6px"></div>
+        <div style="font-size:8px;opacity:.65">${intlNum}</div>
+      </div>
+      <!-- BOTTOM ROW -->
+      <div style="position:absolute;bottom:0;left:0;right:0;padding:10px 16px;background:rgba(0,0,0,.25);backdrop-filter:blur(4px);display:flex;justify-content:space-between;align-items:flex-end">
+        <div>
+          <div style="font-size:14px;font-weight:800;letter-spacing:.5px">${u.name}</div>
+          <div style="font-size:8px;opacity:.7;margin-top:1px">${u.island||'Maldives'} · Since ${new Date(u.joinDate||Date.now()).getFullYear()}</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">
+          <div><div style="font-size:13px;font-weight:900">${u.donations||0}</div><div style="font-size:7px;opacity:.7">DONS</div></div>
+          <div><div style="font-size:13px;font-weight:900">${lives}</div><div style="font-size:7px;opacity:.7">LIVES</div></div>
+          <div><div style="font-size:13px;font-weight:900">${score}</div><div style="font-size:7px;opacity:.7">SCORE</div></div>
+        </div>
+      </div>
+    </div>
+    <!-- ACTION BUTTONS -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button class="btn btn-red btn-sm" style="padding:12px" onclick="downloadPremiumCard()">📥 Save Card</button>
+      <button class="btn btn-ghost btn-sm" style="padding:12px" onclick="sharePassport()">🔗 Share</button>
+    </div>
+  </div>`;
+}
+
+function downloadPremiumCard() {
+  downloadPassportCert();
 }
 
 // ===== GLOBAL MAP =====
